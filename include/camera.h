@@ -9,16 +9,16 @@ class Camera {
 public:
     Camera();
 
-    explicit Camera(const vec3f position, const float vertical_fov, const float focal_length,
+    explicit Camera(Vec3f pos, float vertical_fov, float focal_length, Vec3f look_at, Vec3f ref_up,
                     std::shared_ptr<ImageRGB> &img);
 
     Ray generateRay(float x, float y);
 
-    void lookAt(const vec3f &look_at, const vec3f &ref_up = {0, 1, 0});
+    void lookAt(const Vec3f &look_at, const Vec3f &ref_up = {0, 1, 0});
 
-    void setPosition(const vec3f &pos);
+    void setPosition(const Vec3f &pos);
 
-    [[nodiscard]] vec3f getPosition() const;
+    [[nodiscard]] Vec3f getPosition() const;
 
     void setFov(float new_fov);
 
@@ -29,10 +29,10 @@ public:
     [[nodiscard]] std::shared_ptr<ImageRGB> &getImage();
 
 private:
-    vec3f position;
-    vec3f forward;
-    vec3f up;
-    vec3f right;
+    Vec3f position;
+    Vec3f forward{};
+    Vec3f up{};
+    Vec3f right{};
     float focal_len;
     float fov;
 

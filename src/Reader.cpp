@@ -53,7 +53,7 @@ std::vector<openvdb::Vec3SGrid::Ptr> Reader::readGrids(const std::string &dir) {
     return grids;
 }
 
-void Reader::loadObj(const std::string &dir, std::vector<vec3f> &vertices, std::vector<vec3f> &normals,
+void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::vector<Vec3f> &normals,
                      std::vector<int> &v_index, std::vector<int> &n_index) {
     /* Function of loading vertex and index data from a .obj file
      * @param dir: the directory of the .obj file

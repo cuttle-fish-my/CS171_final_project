@@ -15,7 +15,7 @@ public:
     static std::vector<openvdb::Vec3SGrid::Ptr> readGrids(const std::string &dir);
 
 //    load vertex and index data from a .obj file
-    static void loadObj(const std::string &dir, std::vector<vec3f> &vertices, std::vector<vec3f> &normals,
+    static void loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::vector<Vec3f> &normals,
                         std::vector<int> &v_index, std::vector<int> &n_index);
 };
 

@@ -13,14 +13,14 @@ public:
 
     [[nodiscard]] float getAspectRatio() const;
 
-    [[nodiscard]] vec2i getResolution() const;
+    [[nodiscard]] Vec2i getResolution() const;
 
-    void setPixel(int x, int y, const vec3f &value);
+    void setPixel(int x, int y, const Vec3f &value);
 
     void writeImgToFile(const std::string &file_name);
 
 private:
-    std::vector<vec3f> data;
-    vec2i resolution;
+    std::vector<Vec3f> data;
+    Vec2i resolution;
 };
 #endif //CS171_FINAL_PROJECT_IMAGE_H
