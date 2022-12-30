@@ -2,7 +2,6 @@
 #define CS171_FINAL_PROJECT_IMAGE_H
 #include <vector>
 #include <string>
-
 #include "common.h"
 
 class ImageRGB {

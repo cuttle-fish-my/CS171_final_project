@@ -2,7 +2,6 @@
 #include "Reader.h"
 
 
-
 int main() {
 //    Reader::showMetaInfo("dataset/single-res small.vdb");
 //    Reader::showMetaInfo("dataset/single-res big.vdb");
@@ -12,5 +11,6 @@ int main() {
     std::vector<Vec3f> vertices, normals;
     std::vector<int> v_index, n_index;
     Reader::loadObj("dataset/sphere.obj", vertices, normals, v_index, n_index);
+
 
 }
