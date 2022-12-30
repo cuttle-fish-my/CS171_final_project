@@ -12,7 +12,7 @@ public:
 
     static void showMetaInfo(const std::string &dir);
 
-    static std::vector<openvdb::Vec3SGrid::Ptr> readGrids(const std::string &dir);
+    static std::vector<Vec3fGrid::Ptr> readGrids(const std::string &dir);
 
 //    load vertex and index data from a .obj file
     static void loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::vector<Vec3f> &normals,

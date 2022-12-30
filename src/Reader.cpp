@@ -1,7 +1,6 @@
 #include <openvdb/openvdb.h>
 #include "Reader.h"
 #include <iostream>
-
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include <tiny_obj_loader.h>
@@ -29,7 +28,7 @@ void Reader::showMetaInfo(const std::string &dir) {
     file.close();
 }
 
-std::vector<openvdb::Vec3SGrid::Ptr> Reader::readGrids(const std::string &dir) {
+std::vector<Vec3fGrid::Ptr> Reader::readGrids(const std::string &dir) {
     /* Function of reading grids from a vdb file
      * @param dir: the directory of the vdb file
      * Structure of a vdb file:
@@ -44,7 +43,7 @@ std::vector<openvdb::Vec3SGrid::Ptr> Reader::readGrids(const std::string &dir) {
     openvdb::io::File file(dir);
     file.open();
     openvdb::GridBase::Ptr baseGrid;
-    std::vector<openvdb::Vec3SGrid::Ptr> grids;
+    std::vector<Vec3fGrid::Ptr> grids;
     for (auto nameIter = file.beginName(); nameIter != file.endName(); ++nameIter) {
         baseGrid = file.readGrid(nameIter.gridName());
         grids.push_back(openvdb::gridPtrCast<openvdb::Vec3SGrid>(baseGrid));

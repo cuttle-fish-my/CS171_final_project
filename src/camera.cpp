@@ -16,7 +16,7 @@ Ray Camera::generateRay(const float x, const float y) {
         std::tan(getFov() * PI / 180.f / 2);
     Vec3f dir = (dx * right + dy * up + forward);
     dir.normalize();
-    return Ray{position, dir};
+    return Ray{position, dir, RAY_DEFAULT_MIN, RAY_DEFAULT_MAX};
 }
 
 void Camera::lookAt(const Vec3f &look_at, const Vec3f &ref_up) {
