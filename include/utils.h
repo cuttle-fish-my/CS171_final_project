@@ -20,8 +20,12 @@ namespace util {
             auto scalarGrid = floatGrid::create();
             scalarGrid->setTransform(grid->transform().copy());
             scalarGrid->topologyUnion(*grid);
+            for (auto iter = grid->beginMeta(); iter != grid->endMeta(); ++iter) {
+                scalarGrid->insertMeta(openvdb::Name(iter->first),*(iter->second));
+            }
+            auto accessor = scalarGrid->getAccessor();
             for (auto iter = grid->cbeginValueOn(); iter; ++iter) {
-                scalarGrid->setValue(iter.getCoord(), iter.getValue().length());
+                accessor.setValue(iter.getCoord(), iter.getValue().length());
             }
             scalarGrids.push_back(scalarGrid);
         }

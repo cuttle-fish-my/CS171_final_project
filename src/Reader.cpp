@@ -68,7 +68,6 @@ void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::
 
     auto &attrib = reader.GetAttrib();
     auto &shapes = reader.GetShapes();
-    auto &materials = reader.GetMaterials();
 
     for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
         vertices.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
