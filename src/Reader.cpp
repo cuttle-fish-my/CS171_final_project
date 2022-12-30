@@ -1,7 +1,6 @@
 #include <openvdb/openvdb.h>
 #include "Reader.h"
-#include <fstream>
-#include <sstream>
+#include <iostream>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 
@@ -63,19 +62,10 @@ void Reader::loadObj(const std::string &dir, std::vector<vec3f> &vertices, std::
      * @param v_index: the vector of vertex n_index
      * @param n_index: the vector of n_index
      * */
+    std::cout << "loading obj file:" << dir << std::endl;
     tinyobj::ObjReaderConfig reader_config;
 
     tinyobj::ObjReader reader;
-
-    if (!reader.ParseFromFile(dir, reader_config)) {
-        if (!reader.Error().empty()) {
-            std::cerr << "TinyObjReader: " << reader.Error();
-        }
-        exit(1);
-    }
-    if (!reader.Warning().empty()) {
-        std::cout << "TinyObjReader: " << reader.Warning();
-    }
 
     auto &attrib = reader.GetAttrib();
     auto &shapes = reader.GetShapes();
