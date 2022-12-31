@@ -2,6 +2,7 @@
 #define CS171_FINAL_PROJECT_UTILS_H
 
 #include "common.h"
+#include "AABB.h"
 
 namespace util {
     static inline float clamp01(float v) {
@@ -14,8 +15,8 @@ namespace util {
         return static_cast<uint8_t>(255.f * clamp01(powf(radiance, 1.f / 2.2f)));
     }
 
-    static std::vector<floatGrid::Ptr> convertVectorGridsToScalarGrids(const std::vector<Vec3fGrid::Ptr> &vectorGrids) {
-        std::vector<floatGrid::Ptr> scalarGrids;
+    static std::vector<vdbGrid> convertVectorGridsToScalarGrids(const std::vector<Vec3fGrid::Ptr> &vectorGrids) {
+        std::vector<vdbGrid> Grids;
         for (auto &grid: vectorGrids) {
             auto scalarGrid = floatGrid::create();
             scalarGrid->setTransform(grid->transform().copy());
@@ -27,10 +28,12 @@ namespace util {
             for (auto iter = grid->cbeginValueOn(); iter; ++iter) {
                 accessor.setValue(iter.getCoord(), iter.getValue().length());
             }
-            scalarGrids.push_back(scalarGrid);
+            Grids.emplace_back(scalarGrid);
         }
-        return scalarGrids;
+        return Grids;
     }
 }
+
+
 
 #endif //CS171_FINAL_PROJECT_UTILS_H

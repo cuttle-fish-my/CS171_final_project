@@ -13,7 +13,7 @@ int main() {
 //    Reader::showMetaInfo("dataset/multi-res small.vdb");
 //    Reader::showMetaInfo("dataset/multi-res big.vdb");
     std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/multi-res small.vdb");
-    std::vector<floatGrid::Ptr> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
+    std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
     AABB aabb(VectorGrids[0]);
 //    std::vector<Vec3f> vertices, normals;
 //    std::vector<int> v_index, n_index;
