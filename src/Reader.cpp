@@ -66,6 +66,17 @@ void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::
 
     tinyobj::ObjReader reader;
 
+    if (!reader.ParseFromFile(dir, reader_config)) {
+        if (!reader.Error().empty()) {
+            std::cerr << "TinyObjReader: " << reader.Error();
+        }
+        exit(1);
+    }
+
+//    if (!reader.Warning().empty()) {
+//        std::cout << "TinyObjReader: " << reader.Warning();
+//    }
+
     auto &attrib = reader.GetAttrib();
     auto &shapes = reader.GetShapes();
 
