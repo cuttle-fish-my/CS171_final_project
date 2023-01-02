@@ -46,7 +46,7 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
     std::vector<float> weights;
     for (int i = 0; i < 8; ++i) {
         openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
-        if (grid->tree().isValueOn(coord)){
+        if (grid->tree().isValueOn(coord)) {
             Vec3f corner = grid->transform().indexToWorld(Corners[i]);
             float weight = 1;
             for (int j = 0; j < 3; j++) {
@@ -61,7 +61,7 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
         numerator += weights[i] * grid->tree().getValue(coord);
     }
     float denominator = 0;
-    for (float weight : weights) {
+    for (float weight: weights) {
         denominator += weight;
     }
     return weights.empty() ? 0 : numerator / denominator;
@@ -73,9 +73,8 @@ float vdbGrid::sampleOpacity(const float value) {
 
 Vec3f vdbGrid::sampleEmission(const float value) {
     Vec3f color{
-            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f),
-            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f),
-            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f)
+            0.0f, 0.0f,
+            std::clamp(value, 0.0f, 255.0f)
     };
     return color;
 }

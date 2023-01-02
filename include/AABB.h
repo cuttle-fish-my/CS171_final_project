@@ -18,7 +18,7 @@ struct vdbGrid {
     float dx;
     std::mt19937 gen{std::random_device()()};
     std::normal_distribution<float> opacity_sampler{0, 0.01};
-    std::normal_distribution<float> emission_sampler{0, 10};
+    std::normal_distribution<float> emission_sampler{0, 0.01};
 
 
     explicit vdbGrid(const floatGrid::Ptr &grid);
