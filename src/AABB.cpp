@@ -44,29 +44,38 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
                                Vec3f(upper.x(), upper.y(), lower.z()),
                                Vec3f(upper.x(), upper.y(), upper.z())};
     std::vector<float> weights;
-    for (auto &corner: Corners) {
-        corner = grid->transform().indexToWorld(corner);
-        float weight = 1;
-        for (int i = 0; i < 3; i++) {
-            weight *= float(fmax((1 - fabs(corner[i] - pos[i]) / dx), 0.0));
+    for (int i = 0; i < 8; ++i) {
+        openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
+        if (grid->tree().isValueOn(coord)){
+            Vec3f corner = grid->transform().indexToWorld(Corners[i]);
+            float weight = 1;
+            for (int j = 0; j < 3; j++) {
+                weight *= float(fmax((1 - fabs(corner[j] - pos[j]) / dx), 0.0));
+            }
+            weights.push_back(weight);
         }
-        weights.push_back(weight);
     }
     float numerator = 0;
-    for (int i = 0; i <= 8; ++i) {
-        numerator += weights[i] * grid->tree().getValue(openvdb::Coord(Vec3i(Corners[i])));
+    for (int i = 0; i < weights.size(); ++i) {
+        openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
+        numerator += weights[i] * grid->tree().getValue(coord);
     }
     float denominator = 0;
-    for (int i = 0; i <= 8; ++i) {
-        denominator += weights[i];
+    for (float weight : weights) {
+        denominator += weight;
     }
-    return numerator / denominator;
+    return weights.empty() ? 0 : numerator / denominator;
 }
 
 float vdbGrid::sampleOpacity(const float value) {
     return std::clamp(value + opacity_sampler(gen), 0.0f, 1.0f);
 }
 
-float vdbGrid::sampleEmission(const float value) {
-    return std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f);
+Vec3f vdbGrid::sampleEmission(const float value) {
+    Vec3f color{
+            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f),
+            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f),
+            std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f)
+    };
+    return color;
 }

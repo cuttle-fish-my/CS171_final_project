@@ -27,7 +27,7 @@ struct vdbGrid {
 
     float sampleOpacity(float value);
 
-    float sampleEmission(float value);
+    Vec3f sampleEmission(float value);
 
 
 };

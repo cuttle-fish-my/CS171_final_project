@@ -14,20 +14,20 @@ int main() {
 //    Reader::showMetaInfo("dataset/multi-res big.vdb");
     std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/single-res small.vdb");
     std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
-//    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(600, 600);
-//    Camera cam(Vec3f(-10, 10, 60), 19.5, 1, Vec3f(5, 0, 0), Vec3f(0, 1, 0), image);
-//    Scene scene;
-//    scene.setGrids(ScalarGrids);
-//    Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));
-//    std::cout << "Start Rendering..." << std::endl;
-//    auto start = std::chrono::steady_clock::now();
-//    // render scene
-//    integrator.render();
-//    auto end = std::chrono::steady_clock::now();
-//    auto time = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-//    std::cout << "\nRender Finished in " << time << "s." << std::endl;
-//    image->writeImgToFile("./result.png");
-//    std::cout << "Image saved to disk." << std::endl;
+    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(600, 600);
+    Camera cam(Vec3f(-10, 10, 60), 19.5, 1, Vec3f(5, 0, 0), Vec3f(0, 1, 0), image);
+    Scene scene;
+    scene.setGrids(ScalarGrids);
+    Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));
+    std::cout << "Start Rendering..." << std::endl;
+    auto start = std::chrono::steady_clock::now();
+    // render scene
+    integrator.render();
+    auto end = std::chrono::steady_clock::now();
+    auto time = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    std::cout << "\nRender Finished in " << time << "s." << std::endl;
+    image->writeImgToFile("./result.png");
+    std::cout << "Image saved to disk." << std::endl;
     return 0;
 
 //    std::vector<Vec3f> vertices, normals;
