@@ -42,7 +42,7 @@ THE SOFTWARE.
 // version 1.0.8 : Fix parsing `g` tag just after `usemtl`(#138)
 // version 1.0.7 : Support multiple tex options(#126)
 // version 1.0.6 : Add TINYOBJLOADER_USE_DOUBLE option(#124)
-// version 1.0.5 : Ignore `Tr` when `d` exists in MTL(#43)
+// version 1.0.5 : Ignore `Tr` when `opacity_sampler` exists in MTL(#43)
 // version 1.0.4 : Support multiple filenames for 'mtllib'(#112)
 // version 1.0.3 : Support parsing texture options(#85)
 // version 1.0.2 : Improve parsing speed by about a factor of 2 for large
@@ -1931,7 +1931,7 @@ void LoadMtl(std::map<std::string, int> *material_map,
   material_t material;
   InitMaterial(&material);
 
-  // Issue 43. `d` wins against `Tr` since `Tr` is not in the MTL specification.
+  // Issue 43. `opacity_sampler` wins against `Tr` since `Tr` is not in the MTL specification.
   bool has_d = false;
   bool has_tr = false;
 
@@ -2085,9 +2085,9 @@ void LoadMtl(std::map<std::string, int> *material_map,
       material.dissolve = parseReal(&token);
 
       if (has_tr) {
-        warn_ss << "Both `d` and `Tr` parameters defined for \""
+        warn_ss << "Both `opacity_sampler` and `Tr` parameters defined for \""
                 << material.name
-                << "\". Use the value of `d` for dissolve (line " << line_no
+                << "\". Use the value of `opacity_sampler` for dissolve (line " << line_no
                 << " in .mtl.)\n";
       }
       has_d = true;
@@ -2096,15 +2096,15 @@ void LoadMtl(std::map<std::string, int> *material_map,
     if (token[0] == 'T' && token[1] == 'r' && IS_SPACE(token[2])) {
       token += 2;
       if (has_d) {
-        // `d` wins. Ignore `Tr` value.
-        warn_ss << "Both `d` and `Tr` parameters defined for \""
+        // `opacity_sampler` wins. Ignore `Tr` value.
+        warn_ss << "Both `opacity_sampler` and `Tr` parameters defined for \""
                 << material.name
-                << "\". Use the value of `d` for dissolve (line " << line_no
+                << "\". Use the value of `opacity_sampler` for dissolve (line " << line_no
                 << " in .mtl.)\n";
       } else {
         // We invert value of Tr(assume Tr is in range [0, 1])
         // NOTE: Interpretation of Tr is application(exporter) dependent. For
-        // some application(e.g. 3ds max obj exporter), Tr = d(Issue 43)
+        // some application(e.g. 3ds max obj exporter), Tr = opacity_sampler(Issue 43)
         material.dissolve = static_cast<real_t>(1.0) - parseReal(&token);
       }
       has_tr = true;

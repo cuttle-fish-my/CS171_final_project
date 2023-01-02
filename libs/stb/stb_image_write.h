@@ -741,7 +741,7 @@ static void stbiw__write_hdr_scanline(stbi__write_context *s, int width, int nco
                x += len;
             }
             // if there's a run, output it
-            if (r+2 < width) { // same test as what we break out of in search loop, so only true if we break'd
+            if (r+2 < width) { // same test as what we break out of in search loop, so only true if we break'opacity_sampler
                // find next byte after run
                while (r < width && comp[r] == comp[x])
                   ++r;
@@ -771,9 +771,9 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
       s->func(s->context, header, sizeof(header)-1);
 
 #ifdef __STDC_LIB_EXT1__
-      len = sprintf_s(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
+      len = sprintf_s(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %opacity_sampler +X %opacity_sampler\n", y, x);
 #else
-      len = sprintf(buffer, "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
+      len = sprintf(buffer, "EXPOSURE=          1.0000000000000\n\n-Y %opacity_sampler +X %opacity_sampler\n", y, x);
 #endif
       s->func(s->context, buffer, len);
 

@@ -16,7 +16,10 @@ struct vdbGrid {
     floatGrid::Ptr grid;
     AABB aabb;
     float dx;
-
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<float> opacity_sampler{0, 0.01};
+    std::normal_distribution<float> emission_sampler{0, 10};
 
 
     explicit vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid) {
@@ -59,6 +62,15 @@ struct vdbGrid {
         }
         return numerator / denominator;
     }
+
+    float sampleOpacity(const float value) {
+        return std::clamp(value + opacity_sampler(gen), 0.0f, 1.0f);
+    }
+
+    float sampleEmission(const float value) {
+        return std::clamp(value * 1000 + emission_sampler(gen), 0.0f, 255.0f);
+    }
+
 
 };
 
