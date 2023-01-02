@@ -32,6 +32,10 @@ namespace util {
         }
         return Grids;
     }
+
+    void setBorderToZero(std::vector<Vec3fGrid::Ptr> &Grids) {
+
+    }
 }
 
 
