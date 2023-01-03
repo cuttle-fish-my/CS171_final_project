@@ -33,10 +33,10 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
     float step_size = 0.01;
     Vec3f src_color = Vec3f{0, 0, 0};
     float src_opacity = 0;
-    float dst_t = t0 - step_size;
+    auto dst_t = (float) fmax(t0 - step_size, ray.t0());
     Vec3f dst_pos, dst_color;
     float dst_opacity;
-    while (dst_t < t1) {
+    while (dst_t < t1 - step_size) {
         dst_t += step_size;
         dst_pos = ray(dst_t);
         dst_color = scene->grids[0].sampleEmission(scene->grids[0].interpolation(dst_pos));

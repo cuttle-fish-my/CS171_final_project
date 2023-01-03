@@ -22,7 +22,7 @@ namespace util {
             scalarGrid->setTransform(grid->transform().copy());
             scalarGrid->topologyUnion(*grid);
             for (auto iter = grid->beginMeta(); iter != grid->endMeta(); ++iter) {
-                scalarGrid->insertMeta(openvdb::Name(iter->first),*(iter->second));
+                scalarGrid->insertMeta(openvdb::Name(iter->first), *(iter->second));
             }
             auto accessor = scalarGrid->getAccessor();
             for (auto iter = grid->cbeginValueOn(); iter; ++iter) {
@@ -32,12 +32,7 @@ namespace util {
         }
         return Grids;
     }
-
-    void setBorderToZero(std::vector<Vec3fGrid::Ptr> &Grids) {
-
-    }
 }
-
 
 
 #endif //CS171_FINAL_PROJECT_UTILS_H

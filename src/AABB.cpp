@@ -67,97 +67,84 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
     return weights.empty() ? 0 : numerator / denominator;
 }
 
-float vdbGrid::sampleOpacity(const float value) {
-//    std::cout << value << std::endl;
+float vdbGrid::sampleOpacity(float value) const {
     float opacity = 0.5f * std::exp(-std::abs(value - 0.03f) * 100);
     return opacity;
 }
 
 Vec3f vdbGrid::sampleEmission(const float value) {
     Vec3f color = Vec3f{0, 0, 0};
-    if (value <= 0.005) {
+    if (value > 0.01 && value <= 0.005) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100),
                 0,
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100),
                 0.33f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100)
         };
     } else if (value > 0.005 && value <= 0.01) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100),
                 0,
                 0.5f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100),
                 0.66f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100)
         };
     } else if (value > 0.015 && value <= 0.02) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100),
                 0,
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100),
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100)
         };
     } else if (value > 0.02 && value <= 0.025) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100),
                 0,
                 0.5f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100),
                 0.33f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100)
         };
     } else if (value > 0.025 && value <= 0.03) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100),
                 0,
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100),
                 0.66f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100)
         };
     } else if (value > 0.03 && value <= 0.035) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100),
                 0,
                 0.5f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100),
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100)
         };
     } else if (value > 0.035 && value <= 0.04) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100),
                 0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100),
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100)
+                0.33f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100),
+                1.0f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100)
         };
     } else if (value > 0.04 && value <= 0.045) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100),
                 0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100),
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100)
+                0.66f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100),
+                0.5f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100)
         };
     } else if (value > 0.045 && value <= 0.05) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100),
                 0,
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100),
                 1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100)
         };
     } else if (value > 0.05 && value <= 0.055) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100),
                 0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100),
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100)
+                0.33f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100),
+                0.5f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100)
         };
     } else if (value > 0.055 && value <= 0.06) {
         color = Vec3f{
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100),
                 0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100),
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100)
+                0.66f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100),
+                1.0f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100)
         };
     } else if (value > 0.06 && value <= 0.065) {
         color = Vec3f{
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100),
                 0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100)
+                1.0f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100),
+                0.5f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100)
         };
     }
     return color;

@@ -25,9 +25,9 @@ struct vdbGrid {
 
     [[nodiscard]] float interpolation(const Vec3f &pos) const;
 
-    float sampleOpacity(float value);
+    [[nodiscard]] float sampleOpacity(float value) const;
 
-    Vec3f sampleEmission(float value);
+    static Vec3f sampleEmission(float value);
 
 
 };

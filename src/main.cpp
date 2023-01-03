@@ -8,14 +8,12 @@
 #include "AABB.h"
 
 int main() {
-//    Reader::showMetaInfo("dataset/single-res small.vdb");
-//    Reader::showMetaInfo("dataset/single-res big.vdb");
-//    Reader::showMetaInfo("dataset/multi-res small.vdb");
-//    Reader::showMetaInfo("dataset/multi-res big.vdb");
+    setbuf(stdout, nullptr);
     std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/single-res big.vdb");
     std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
-    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1920, 1080);
-    Camera cam(Vec3f(-10, 10, 60), 19.5, 1, Vec3f(5, 0, 0), Vec3f(0, 1, 0), image);
+
+    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1200, 600);
+    Camera cam(Vec3f(3, 3.2, 15), 19.5, 1, Vec3f(10, 0, -10), Vec3f(0, 1, 0), image);
     Scene scene;
     scene.setGrids(ScalarGrids);
     Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));

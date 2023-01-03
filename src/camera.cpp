@@ -9,7 +9,7 @@ Camera::Camera(const Vec3f pos, const float vertical_fov, const float focal_leng
 
 Ray Camera::generateRay(const float x, const float y) {
     const auto resolution = image->getResolution();
-    float ratio = static_cast<float>(resolution.x()) / static_cast<float>(resolution.y());
+    float ratio = image->getAspectRatio();
     const auto dx = (2 * x / static_cast<float>(resolution.x()) - 1) * focal_len * ratio *
         std::tan(getFov() * PI / 180.f / 2);
     const auto dy = (2 * y / static_cast<float>(resolution.y()) - 1) * focal_len *
