@@ -43,8 +43,8 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
                                Vec3f(upper.x(), lower.y(), upper.z()),
                                Vec3f(upper.x(), upper.y(), lower.z()),
                                Vec3f(upper.x(), upper.y(), upper.z())};
-    std::vector<float> weights;
-    for (int i = 0; i < 8; ++i) {
+    std::vector<float> weights(8, 0.0f);
+    for (int i = 0; i < weights.size(); ++i) {
         openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
         if (grid->tree().isValueOn(coord)) {
             Vec3f corner = grid->transform().indexToWorld(Corners[i]);
@@ -52,7 +52,7 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
             for (int j = 0; j < 3; j++) {
                 weight *= float(fmax((1 - fabs(corner[j] - pos[j]) / dx), 0.0));
             }
-            weights.push_back(weight);
+            weights[i] = weight;
         }
     }
     float numerator = 0;
@@ -64,7 +64,7 @@ float vdbGrid::interpolation(const Vec3f &pos) const {
     for (float weight: weights) {
         denominator += weight;
     }
-    return weights.empty() ? 0 : numerator / denominator;
+    return denominator == 0 ? 0 : numerator / denominator;
 }
 
 float vdbGrid::sampleOpacity(float value) const {
