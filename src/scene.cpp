@@ -21,16 +21,10 @@ float Scene::interpolation(const Vec3f &pos) const {
                            {upper.x(), upper.y(), upper.z()}});
     }
 
-    int ignore = 0;
-    for (int i = static_cast<int>(Corners.size()) - 1; i >= 0; --i) {
-        if (!grids[i].aabb.inAABB(pos)) ++ignore;
-        else break;
-    }
-
     float numerator = 0;
     float denominator = 0;
     for (int r = 0; r < 8; ++r) {
-        for (int i = static_cast<int>(Corners.size()) - 1 - ignore; i >= 0; --i) {
+        for (int i = static_cast<int>(Corners.size()) - 1; i >= 0; --i) {
             openvdb::Coord coord{Corners[i][r]};
             if (grids[i].grid->tree().isValueOn(coord)) {
                 Vec3f corner = grids[i].grid->transform().indexToWorld(Corners[i][r]);

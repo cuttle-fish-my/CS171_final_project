@@ -8,6 +8,9 @@ Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene
 
 void Integrator::render() const {
     Vec2i resolution = camera->getImage()->getResolution();
+    for (auto &grid: scene->grids) {
+        std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
+    }
     int cnt = 0;
 #pragma omp parallel for schedule(guided, 2), default(none), shared(cnt, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
