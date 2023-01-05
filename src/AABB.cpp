@@ -37,5 +37,14 @@ bool AABB::isOverlap(const AABB &other) const {
             (this->lower_bnd[2] >= other.lower_bnd[2] && this->lower_bnd[2] <= other.upper_bnd[2]));
 }
 
+bool AABB::inAABB(Vec3f point) const {
+    return lower_bnd[0] < point[0] &&
+           lower_bnd[1] < point[1] &&
+           lower_bnd[2] < point[2] &&
+           point[0] < upper_bnd[0] &&
+           point[1] < upper_bnd[1] &&
+           point[2] < upper_bnd[2];
+}
+
 vdbGrid::vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid), dx(float(grid->transform().voxelSize()[0])) {
 }

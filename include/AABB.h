@@ -12,15 +12,14 @@ struct AABB {
     bool intersect(const Ray &ray, float &t0, float &t1) const;
 
     bool isOverlap(const AABB &other) const;
+
+    bool inAABB(Vec3f point) const;
 };
 
 struct vdbGrid {
     floatGrid::Ptr grid;
     AABB aabb;
     float dx;
-    std::mt19937 gen{std::random_device()()};
-    std::normal_distribution<float> opacity_sampler{0, 0.01};
-    std::normal_distribution<float> emission_sampler{0, 0.01};
 
 
     explicit vdbGrid(const floatGrid::Ptr &grid);

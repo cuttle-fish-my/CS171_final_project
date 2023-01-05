@@ -17,11 +17,9 @@ void Integrator::render() const {
         for (int dy = 0; dy < resolution.y(); dy++) {
             Vec3f L(0, 0, 0);
             Ray ray = camera->generateRay((float) dx, (float) dy);
-            for (const auto &grid: scene->grids) {
-                float t0, t1;
-                if (grid.aabb.intersect(ray, t0, t1)) {
-                    L += radiance(ray, t0, t1);
-                }
+            float t0, t1;
+            if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
+                L += radiance(ray, t0, t1);
             }
             camera->getImage()->setPixel(dx, dy, L);
         }
