@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(CS171_final_project)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 find_package(OpenMP REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/OpenVDB")
 find_package(OpenVDB REQUIRED)

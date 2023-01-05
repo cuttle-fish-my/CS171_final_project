@@ -14,7 +14,6 @@ int main() {
 
     std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1200, 600);
     Camera cam(Vec3f(3, 3.2, 15), 19.5, 1, Vec3f(10, 0, -10), Vec3f(0, 1, 0), image);
-//    Camera cam(Vec3f(3, 3.2, 15) - 3 * Vec3f(10, 0, -10), 19.5, 1, Vec3f(10, 0, -10), Vec3f(0, 1, 0), image);
     Scene scene;
     scene.setGrids(ScalarGrids);
     Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));
@@ -28,11 +27,4 @@ int main() {
     image->writeImgToFile("./result.png");
     std::cout << "Image saved to disk." << std::endl;
     return 0;
-
-//    std::vector<Vec3f> vertices, normals;
-//    std::vector<int> v_index, n_index;
-//    Reader::loadObj("dataset/sphere.obj", vertices, normals, v_index, n_index);
-//    std::cout << 1 << std::endl;
-
-
 }

@@ -1,5 +1,7 @@
 #include "AABB.h"
 
+AABB::AABB(Vec3f lower, Vec3f upper) : lower_bnd(lower), upper_bnd(upper) {};
+
 AABB::AABB(const floatGrid::Ptr &grid) :
         lower_bnd(grid->transform().indexToWorld(grid->evalActiveVoxelBoundingBox().min())),
         upper_bnd(grid->transform().indexToWorld(grid->evalActiveVoxelBoundingBox().max())) {}

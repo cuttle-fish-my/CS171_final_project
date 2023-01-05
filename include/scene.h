@@ -9,15 +9,19 @@ public:
 
     std::vector<vdbGrid> grids;
 
+    KDTree tree;
+
+    [[nodiscard]] int searchTree(Vec3f pos) const;
+
     void setGrids(const std::vector<vdbGrid> &Grids);
 
-    float interpolation(const Vec3f &pos) const;
+    [[nodiscard]] std::pair<float, float> interpolation(const Vec3f &pos) const;
 
     static float sampleOpacity(float value) ;
 
     static Vec3f sampleEmission(float value);
 
-    std::pair<Vec3f, float> getEmissionOpacity(Vec3f value) const;
+    [[nodiscard]] std::tuple<Vec3f, float, float> getEmissionOpacity(Vec3f value) const;
 };
 
 #endif //CS171_FINAL_PROJECT_SCENE_H

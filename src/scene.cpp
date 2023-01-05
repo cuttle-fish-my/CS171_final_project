@@ -2,9 +2,60 @@
 
 void Scene::setGrids(const std::vector<vdbGrid> &Grids) {
     grids = Grids;
+    KDTree *current = &tree;
+    current->aabb = grids[0].aabb;
+    for (int i = 0; i < grids.size() - 1; ++i) {
+        auto [out_lo, out_hi] = grids[i].aabb;
+        out_lo = grids[i].grid->transform().indexToWorld(grids[i].grid->evalActiveVoxelBoundingBox().min() - Vec3d(1));
+        auto [in_lo, in_hi] = grids[i + 1].aabb;
+        in_lo = grids[i + 1].grid->transform().indexToWorld(grids[i + 1].grid->evalActiveVoxelBoundingBox().min() - Vec3d(1));
+        current->leaf = false;
+        current->children.push_back(KDTree{.leaf=false, .aabb = AABB{in_lo, in_hi}});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{out_lo.x(), out_lo.y(), out_lo.z()},
+                             {in_lo.x(),  out_hi.y(), out_hi.z()}},
+                .support_layer = i});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{in_hi.x(),  out_lo.y(), out_lo.z()},
+                             {out_hi.x(), out_hi.y(), out_hi.z()}},
+                .support_layer = i});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{in_lo.x(), out_lo.y(), out_lo.z()},
+                             {in_hi.x(), in_lo.y(),  out_hi.z()}},
+                .support_layer = i});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{in_lo.x(), in_hi.y(),  out_lo.z()},
+                             {in_hi.x(), out_hi.y(), out_hi.z()}},
+                .support_layer = i});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{in_lo.x(), in_lo.y(), out_lo.z()},
+                             {in_hi.x(), in_hi.y(), in_lo.z()}},
+                .support_layer = i});
+        current->children.push_back(KDTree{.leaf=true,
+                .aabb = AABB{{in_lo.x(), in_hi.y(), in_hi.z()},
+                             {in_hi.x(), in_hi.y(), out_hi.z()}},
+                .support_layer = i});
+        current = &current->children[0];
+    }
+    current->support_layer = static_cast<int>(grids.size()) - 1;
+    current->leaf = true;
 }
 
-float Scene::interpolation(const Vec3f &pos) const {
+int Scene::searchTree(const Vec3f pos) const {
+    auto recursiveFind = [](const KDTree *layer, const Vec3f pos, auto &&findLayer) {
+        if (!layer->aabb.inAABB(pos)) return -1;
+        if (layer->leaf) return layer->support_layer;
+        for (const auto &child: layer->children) {
+            if (child.aabb.inAABB(pos)) {
+                return findLayer(&child, pos, findLayer);
+            }
+        }
+        return -1;
+    };
+    return recursiveFind(&tree, pos, recursiveFind);
+}
+
+std::pair<float, float> Scene::interpolation(const Vec3f &pos) const {
     std::vector<std::vector<Vec3i>> Corners;
 
     for (const auto &grid: grids) {
@@ -21,10 +72,14 @@ float Scene::interpolation(const Vec3f &pos) const {
                            {upper.x(), upper.y(), upper.z()}});
     }
 
+    // Traverse KD-tree
+    int layers = searchTree(pos);
+    if (layers == -1) return {0.0f, 0.0f};
+
     float numerator = 0;
     float denominator = 0;
     for (int r = 0; r < 8; ++r) {
-        for (int i = static_cast<int>(Corners.size()) - 1; i >= 0; --i) {
+        for (int i = layers; i >= 0; --i) {
             openvdb::Coord coord{Corners[i][r]};
             if (grids[i].grid->tree().isValueOn(coord)) {
                 Vec3f corner = grids[i].grid->transform().indexToWorld(Corners[i][r]);
@@ -38,7 +93,8 @@ float Scene::interpolation(const Vec3f &pos) const {
             }
         }
     }
-    return denominator == 0 ? 0 : numerator / denominator;
+    if (denominator == 0) return {0.0f, grids[layers].dx};
+    else return {numerator / denominator, grids[layers].dx};
 }
 
 float Scene::sampleOpacity(float value) {
@@ -124,7 +180,7 @@ Vec3f Scene::sampleEmission(float value) {
     return color;
 }
 
-std::pair<Vec3f, float> Scene::getEmissionOpacity(Vec3f value) const {
-    auto inter = interpolation(value);
-    return {sampleEmission(inter), sampleOpacity(inter)};
+std::tuple<Vec3f, float, float> Scene::getEmissionOpacity(Vec3f value) const {
+    auto [inter, layer] = interpolation(value);
+    return {sampleEmission(inter), sampleOpacity(inter), layer};
 }
