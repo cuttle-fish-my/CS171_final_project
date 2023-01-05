@@ -10,6 +10,8 @@ struct AABB {
     explicit AABB(const floatGrid::Ptr &grid);
 
     bool intersect(const Ray &ray, float &t0, float &t1) const;
+
+    bool isOverlap(const AABB &other) const;
 };
 
 struct vdbGrid {
@@ -22,14 +24,6 @@ struct vdbGrid {
 
 
     explicit vdbGrid(const floatGrid::Ptr &grid);
-
-    [[nodiscard]] float interpolation(const Vec3f &pos) const;
-
-    [[nodiscard]] float sampleOpacity(float value) const;
-
-    static Vec3f sampleEmission(float value);
-
-
 };
 
 

@@ -28,124 +28,14 @@ bool AABB::intersect(const Ray &ray, float &t0, float &t1) const {
 
 }
 
+bool AABB::isOverlap(const AABB &other) const {
+    return ((other.lower_bnd[0] >= this->lower_bnd[0] && other.lower_bnd[0] <= this->upper_bnd[0]) ||
+            (this->lower_bnd[0] >= other.lower_bnd[0] && this->lower_bnd[0] <= other.upper_bnd[0])) &&
+           ((other.lower_bnd[1] >= this->lower_bnd[1] && other.lower_bnd[1] <= this->upper_bnd[1]) ||
+            (this->lower_bnd[1] >= other.lower_bnd[1] && this->lower_bnd[1] <= other.upper_bnd[1])) &&
+           ((other.lower_bnd[2] >= this->lower_bnd[2] && other.lower_bnd[2] <= this->upper_bnd[2]) ||
+            (this->lower_bnd[2] >= other.lower_bnd[2] && this->lower_bnd[2] <= other.upper_bnd[2]));
+}
+
 vdbGrid::vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid), dx(float(grid->transform().voxelSize()[0])) {
-}
-
-float vdbGrid::interpolation(const Vec3f &pos) const {
-    Vec3f local_pos = grid->transform().worldToIndex(pos);
-    Vec3f lower = Vec3f(floor(local_pos.x()), floor(local_pos.y()), floor(local_pos.z()));
-    Vec3f upper = Vec3f(ceil(local_pos.x()), ceil(local_pos.y()), ceil(local_pos.z()));
-    std::vector<Vec3f> Corners{Vec3f(lower.x(), lower.y(), lower.z()),
-                               Vec3f(lower.x(), lower.y(), upper.z()),
-                               Vec3f(lower.x(), upper.y(), lower.z()),
-                               Vec3f(lower.x(), upper.y(), upper.z()),
-                               Vec3f(upper.x(), lower.y(), lower.z()),
-                               Vec3f(upper.x(), lower.y(), upper.z()),
-                               Vec3f(upper.x(), upper.y(), lower.z()),
-                               Vec3f(upper.x(), upper.y(), upper.z())};
-    std::vector<float> weights(8, 0.0f);
-    for (int i = 0; i < weights.size(); ++i) {
-        openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
-        if (grid->tree().isValueOn(coord)) {
-            Vec3f corner = grid->transform().indexToWorld(Corners[i]);
-            float weight = 1;
-            for (int j = 0; j < 3; j++) {
-                weight *= float(fmax((1 - fabs(corner[j] - pos[j]) / dx), 0.0));
-            }
-            weights[i] = weight;
-        }
-    }
-    float numerator = 0;
-    for (int i = 0; i < weights.size(); ++i) {
-        openvdb::Coord coord{openvdb::Coord(Vec3i(Corners[i]))};
-        numerator += weights[i] * grid->tree().getValue(coord);
-    }
-    float denominator = 0;
-    for (float weight: weights) {
-        denominator += weight;
-    }
-    return denominator == 0 ? 0 : numerator / denominator;
-}
-
-float vdbGrid::sampleOpacity(float value) const {
-    float opacity = 0.5f * std::exp(-std::abs(value - 0.03f) * 100);
-    return opacity;
-}
-
-Vec3f vdbGrid::sampleEmission(const float value) {
-    Vec3f color = Vec3f{0, 0, 0};
-    if (value > 0.01 && value <= 0.005) {
-        color = Vec3f{
-                0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100),
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100)
-        };
-    } else if (value > 0.005 && value <= 0.01) {
-        color = Vec3f{
-                0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100),
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100)
-        };
-    } else if (value > 0.015 && value <= 0.02) {
-        color = Vec3f{
-                0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100)
-        };
-    } else if (value > 0.02 && value <= 0.025) {
-        color = Vec3f{
-                0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100),
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100)
-        };
-    } else if (value > 0.025 && value <= 0.03) {
-        color = Vec3f{
-                0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100),
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100)
-        };
-    } else if (value > 0.03 && value <= 0.035) {
-        color = Vec3f{
-                0,
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100)
-        };
-    } else if (value > 0.035 && value <= 0.04) {
-        color = Vec3f{
-                0,
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100)
-        };
-    } else if (value > 0.04 && value <= 0.045) {
-        color = Vec3f{
-                0,
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100),
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100)
-        };
-    } else if (value > 0.045 && value <= 0.05) {
-        color = Vec3f{
-                0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100)
-        };
-    } else if (value > 0.05 && value <= 0.055) {
-        color = Vec3f{
-                0,
-                0.33f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100),
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100)
-        };
-    } else if (value > 0.055 && value <= 0.06) {
-        color = Vec3f{
-                0,
-                0.66f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100),
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100)
-        };
-    } else if (value > 0.06 && value <= 0.065) {
-        color = Vec3f{
-                0,
-                1.0f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100),
-                0.5f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100)
-        };
-    }
-    return color;
 }
