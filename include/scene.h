@@ -16,6 +16,8 @@ public:
     static float sampleOpacity(float value) ;
 
     static Vec3f sampleEmission(float value);
+
+    std::pair<Vec3f, float> getEmissionOpacity(Vec3f value) const;
 };
 
 #endif //CS171_FINAL_PROJECT_SCENE_H

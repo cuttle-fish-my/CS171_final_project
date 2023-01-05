@@ -39,8 +39,7 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
     while (dst_t < t1 - step_size) {
         dst_t += step_size;
         dst_pos = ray(dst_t);
-        dst_color = scene->sampleEmission(scene->interpolation(dst_pos));
-        dst_opacity = scene->sampleOpacity(scene->interpolation(dst_pos));
+        std::tie(dst_color, dst_opacity) = scene->getEmissionOpacity(dst_pos);
         dst_color *= step_size;
         dst_opacity = 1 - std::pow(1 - dst_opacity, step_size);
         dst_color += (1 - dst_opacity) * src_color;

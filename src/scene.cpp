@@ -124,3 +124,7 @@ Vec3f Scene::sampleEmission(float value) {
     return color;
 }
 
+std::pair<Vec3f, float> Scene::getEmissionOpacity(Vec3f value) const {
+    auto inter = interpolation(value);
+    return {sampleEmission(inter), sampleOpacity(inter)};
+}
