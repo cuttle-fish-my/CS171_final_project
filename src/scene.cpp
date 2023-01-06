@@ -1,8 +1,14 @@
 #include "scene.h"
-#include "utils.h"
+
+float isoValue = 0.05f;
+float margin = 0.04f;
 
 void Scene::setGrids(const std::vector<vdbGrid> &Grids) {
     grids = Grids;
+
+    min_value = std::min(grids[0].min_value, std::min(grids[1].min_value, grids[2].min_value));
+    max_value = std::max(grids[0].max_value, std::max(grids[1].max_value, grids[2].max_value));
+
     for (auto &grid: Grids) {
         moduleGrids.push_back(grid.grid);
     }
@@ -107,102 +113,33 @@ float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType>
 }
 
 float Scene::sampleOpacity(float value) {
-//    float opacity = std::exp(-std::abs(value - 0.05f) * 100);
-//    return opacity;
-
-    float isoValue = 0.05f;
-    float margin = 0.035f;
     if (value < isoValue + margin && value > isoValue - margin) {
-//        return 1 - std::abs(value - isoValue) / margin;
-        return std::exp(-std::abs(value - 0.05f) * 30);
+        return std::exp(-std::abs(value - 0.05f) * 10);
     } else {
         return 0;
     }
-//    else return 0.0f;
 }
 
-Vec3f Scene::sampleEmission(float value) {
-    float opacity = sampleOpacity(value);
-    return Vec3f{
-            std::exp(-(opacity - 1) * (opacity - 1) * 100),
-            0,
-            0
-    };
-//    Vec3f color = Vec3f{0, 0, 0};
-//    if (value > 0.001 && value <= 0.005) {
-//        color = Vec3f{
-//                0,
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100),
-//                0.33f * 0.5f * std::exp(-std::abs(value - 0.0025f) * 100)
-//        };
-//    } else if (value > 0.005 && value <= 0.01) {
-//        color = Vec3f{
-//                0,
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100),
-//                0.66f * 0.5f * std::exp(-std::abs(value - 0.0075f) * 100)
-//        };
-//    } else if (value > 0.015 && value <= 0.02) {
-//        color = Vec3f{
-//                0,
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100),
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0175f) * 100)
-//        };
-//    } else if (value > 0.02 && value <= 0.025) {
-//        color = Vec3f{
-//                0,
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100),
-//                0.33f * 0.5f * std::exp(-std::abs(value - 0.0225f) * 100)
-//        };
-//    } else if (value > 0.025 && value <= 0.03) {
-//        color = Vec3f{
-//                0,
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100),
-//                0.66f * 0.5f * std::exp(-std::abs(value - 0.0275f) * 100)
-//        };
-//    } else if (value > 0.03 && value <= 0.035) {
-//        color = Vec3f{
-//                0,
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100),
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0325f) * 100)
-//        };
-//    } else if (value > 0.035 && value <= 0.04) {
-//        color = Vec3f{
-//                0,
-//                0.33f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100),
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0375f) * 100)
-//        };
-//    } else if (value > 0.04 && value <= 0.045) {
-//        color = Vec3f{
-//                0,
-//                0.66f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100),
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0425f) * 100)
-//        };
-//    } else if (value > 0.045 && value <= 0.05) {
-//        color = Vec3f{
-//                0,
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100),
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0475f) * 100)
-//        };
-//    } else if (value > 0.05 && value <= 0.055) {
-//        color = Vec3f{
-//                0,
-//                0.33f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100),
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0525f) * 100)
-//        };
-//    } else if (value > 0.055 && value <= 0.06) {
-//        color = Vec3f{
-//                0,
-//                0.66f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100),
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0575f) * 100)
-//        };
-//    } else if (value > 0.06 && value <= 0.065) {
-//        color = Vec3f{
-//                0,
-//                1.0f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100),
-//                0.5f * 0.5f * std::exp(-std::abs(value - 0.0625f) * 100)
-//        };
-//    }
-//    return color;
+Vec3f Scene::sampleEmission(float value, float opacity) const {
+    float a_coef = 0, b_coef = 0, c_coef = 0, d_coef = 0;
+    float mid_value_1 = (max_value + min_value) / 3;
+    float mid_value_2 = 2 * mid_value_1;
+    Vec3f A{0, 0.9, 0.2}, B{0.8, 0.8, 0}, C{1, 0, 0}, D{0.4, 0.6, 0};
+    if (value < mid_value_1) {
+        float range = mid_value_1 - min_value;
+        a_coef = 1 - (value - min_value) / range;
+        b_coef = 1 - (mid_value_1 - value) / range;
+    } else if (value >= mid_value_1 && value < mid_value_2){
+        float range = mid_value_2 - mid_value_1;
+        b_coef = 1 - (value - mid_value_1) / range;
+        c_coef = 1 - (mid_value_2 - value) / range;
+    } else {
+        float range = max_value - mid_value_2;
+        c_coef = 1 - (value - mid_value_2) / range;
+        d_coef = 1 - (max_value - value) / range;
+    }
+
+    return 2 * (a_coef * A + b_coef * B + c_coef * C + d_coef * D) * opacity;
 }
 
 std::tuple<Vec3f, float, float> Scene::getEmissionOpacity(Vec3f value) const {
@@ -210,7 +147,7 @@ std::tuple<Vec3f, float, float> Scene::getEmissionOpacity(Vec3f value) const {
     auto layer = interpolation(value, emission_inter, moduleGrids);
     layer = interpolation(value, opacity_inter, QGrids);
     auto opacity = sampleOpacity(opacity_inter);
-    auto color = 2 * Vec3f(opacity);
+    auto color = sampleEmission(emission_inter, opacity);
 //    sampleEmission(emission_inter)
     return {color, opacity, layer};
 }
@@ -240,15 +177,8 @@ void Scene::genQGrids() {
 
             qValue = -0.5f * (grad_x[0] * grad_x[0] + grad_y[1] * grad_y[1] + grad_z[2] * grad_z[2]) -
                      grad_y[0] * grad_x[1] - grad_z[0] * grad_x[2] - grad_z[1] * grad_y[2];
-//            std::cout<<qValue<<std::endl;
             accessor.setValue(iter.getCoord(), qValue);
         }
         QGrids.push_back(qGrid);
     }
-//    for (const auto &grid: QGrids) {
-//        float m, mm;
-//        grid->evalMinMax(m, mm);
-//        std::cout << m << " " << mm << std::endl;
-//    }
-
 }

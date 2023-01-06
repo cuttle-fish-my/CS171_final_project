@@ -12,6 +12,9 @@ public:
     std::vector<floatGrid::Ptr> QGrids;
     std::vector<Vec3fGrid::Ptr> vectorGrids;
 
+    float min_value;
+    float max_value;
+
     KDTree tree;
 
     [[nodiscard]] int searchTree(Vec3f pos) const;
@@ -23,7 +26,7 @@ public:
 
     static float sampleOpacity(float value) ;
 
-    static Vec3f sampleEmission(float value);
+    Vec3f sampleEmission(float value, float opacity) const;
 
     [[nodiscard]] std::tuple<Vec3f, float, float> getEmissionOpacity(Vec3f value) const;
 

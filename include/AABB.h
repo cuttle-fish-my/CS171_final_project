@@ -24,6 +24,8 @@ struct vdbGrid {
     floatGrid::Ptr grid;
     AABB aabb;
     float dx;
+    float min_value;
+    float max_value;
     explicit vdbGrid(const floatGrid::Ptr &grid);
 };
 
