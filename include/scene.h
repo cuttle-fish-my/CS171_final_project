@@ -19,7 +19,7 @@ public:
     void setGrids(const std::vector<vdbGrid> &Grids);
 
     template<typename T, typename GridType>
-    [[nodiscard]] float interpolation(const Vec3f &pos, T& res, std::vector<GridType> Grids) const;
+    [[nodiscard]] float interpolation(const Vec3f &pos, T& res, const std::vector<GridType> &Grids) const;
 
     static float sampleOpacity(float value) ;
 
