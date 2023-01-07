@@ -56,7 +56,9 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
             step_size = (float) (scene->moduleGrids[layer]->transform().voxelSize()[0]) / 2;
             accessor = scene->moduleGrids[layer]->getAccessor();
         }
-
+        src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
+        dst_color += (1 - dst_opacity) * src_color;
+        dst_opacity += (1 - dst_opacity) * src_opacity;
         if (src_opacity != 0) {
             if (layer == -1) {
                 std::cerr << "Error: src_opacity != 0 but layer == -1" << std::endl;
@@ -74,12 +76,6 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
             Interaction interaction{src_pos, -1, normal};
             dst_color += radiance(ray, interaction, src_color);
         }
-
-        if (src_opacity > 1 - 1e-3) break;
-
-        src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
-        dst_color += (1 - dst_opacity) * src_color;
-        dst_opacity += (1 - dst_opacity) * src_opacity;
     }
     return dst_color;
 }
