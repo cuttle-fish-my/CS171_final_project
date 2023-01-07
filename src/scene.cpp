@@ -67,7 +67,7 @@ int Scene::searchTree(const Vec3f pos) const {
 }
 
 template<typename T, typename GridType>
-float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType> &Grids) const {
+int Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType> &Grids) const {
     std::vector<std::vector<Vec3i>> Corners;
     for (const auto &grid: Grids) {
         Vec3d local_pos = (grid->transform().worldToIndex(pos));
@@ -87,7 +87,7 @@ float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType>
 
     // Traverse KD-tree
     int layers = searchTree(pos);
-    if (layers == -1) return 0.0f;
+    if (layers == -1) return -1;
 
     T numerator(0);
 
@@ -109,15 +109,11 @@ float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType>
         }
     }
     if (denominator != 0) res = numerator / denominator;
-    return float(Grids[layers]->transform().voxelSize()[0]);
+//    return float(Grids[layers]->transform().voxelSize()[0]);
+    return layers;
 }
 
 float Scene::sampleOpacity(float value) {
-//    if (value < isoValue + margin && value > isoValue) {
-//        return std::exp(-std::abs(value - 0.05f));
-//    } else {
-//        return 0;
-//    }
     if (value > isoValue) {
         return 1;
     } else {
@@ -150,8 +146,6 @@ Vec3f Scene::sampleEmission(float value, float opacity) const {
     } else {
         return color ;
     }
-
-//    return 2 * (a_coef * A + b_coef * B + c_coef * C + d_coef * D) * opacity;
 }
 
 std::tuple<Vec3f, float, float> Scene::getEmissionOpacity(Vec3f value) const {
@@ -197,4 +191,10 @@ void Scene::genQGrids() {
 
 void Scene::setSphere(const TriangleMesh &mesh) {
     sphere = mesh;
+}
+
+void Scene::setLight(Vec3f dir, Vec3f color) {
+    lightDir = dir;
+    lightColor = color;
+    lightDir.normalize();
 }

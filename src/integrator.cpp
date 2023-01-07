@@ -38,52 +38,72 @@ void Integrator::render() const {
 }
 
 Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 4;
+    float step_size = scene->grids[0].dx / 2;
     Vec3f src_color;
     float src_opacity;
     auto src_t = (float) fmax(t0 - step_size, ray.t0());
     Vec3f src_pos, dst_color = Vec3f{0, 0, 0};
     float dst_opacity = 0;
     float dx;
+    int layer;
+    auto accessor = scene->moduleGrids[0]->getAccessor();
     while (src_t < t1 - step_size) {
         src_t += step_size;
         src_pos = ray(src_t);
-        std::tie(src_color, src_opacity, dx) = scene->getEmissionOpacity(src_pos);
-        if (dx != 0) step_size = dx / 4;
+        std::tie(src_color, src_opacity, layer) = scene->getEmissionOpacity(src_pos);
 
-//        src_color *= step_size;
+        if (layer != -1) {
+            step_size = (float) (scene->moduleGrids[layer]->transform().voxelSize()[0]) / 2;
+            accessor = scene->moduleGrids[layer]->getAccessor();
+        }
+
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
 
         dst_color += (1 - dst_opacity) * src_color;
         dst_opacity += (1 - dst_opacity) * src_opacity;
+
+        if (src_opacity != 0) {
+            if (layer == -1) {
+                std::cerr << "Error: src_opacity != 0 but layer == -1" << std::endl;
+            }
+            openvdb::Coord ijk(Vec3i(scene->moduleGrids[layer]->transform().worldToIndex(src_pos)));
+            openvdb::Coord low_x = ijk + openvdb::Coord{-1, 0, 0}, low_y = ijk + openvdb::Coord{0, -1, 0},
+                    low_z = ijk + openvdb::Coord{0, 0, -1};
+            openvdb::Coord high_x = ijk + openvdb::Coord{1, 0, 0}, high_y = ijk + openvdb::Coord{0, 1, 0},
+                    high_z = ijk + openvdb::Coord{0, 0, 1};
+            float grad_x = (accessor.getValue(high_x) - accessor.getValue(low_x)) / (2 * dx);
+            float grad_y = (accessor.getValue(high_y) - accessor.getValue(low_y)) / (2 * dx);
+            float grad_z = (accessor.getValue(high_z) - accessor.getValue(low_z)) / (2 * dx);
+            Vec3f normal = Vec3f{grad_x, grad_y, grad_z};
+            normal.normalize();
+            Interaction interaction{src_pos, -1, normal};
+            dst_color += radiance(ray, interaction, dst_color);
+        }
+
     }
     return dst_color;
 }
 
-Vec3f Integrator::radiance(Ray &ray, Interaction &interaction) const {
-    Vec3f radiance(0, 0, 0);
-    Vec3f lightDir{10, -5, 0};
-    Vec3f lightColor{1, 1, 1};
-    lightDir.normalize();
+Vec3f Integrator::radiance(Ray &ray, Interaction &interaction, Vec3f objColor) const {
+    Vec3f radiance;
     Vec3f ambient{0.1, 0.1, 0.1};
     Vec3f diffuse{0, 0, 0};
     Vec3f specular{0, 0, 0};
-    Ray shadow_ray{interaction.pos, -lightDir};
-//    shadow_ray.t_max = (sample.position - interaction.pos).norm() / shadow_ray.direction.norm();
+    Ray shadow_ray{interaction.pos, -scene->lightDir};
     Interaction new_interaction{};
-    if (!scene->sphere.intersect(shadow_ray, new_interaction)) {
-        lightDir = -lightDir;
+    if (interaction.dist > 0 && !scene->sphere.intersect(shadow_ray, new_interaction)) {
+        auto lightDir = -scene->lightDir;
         Vec3f viewDir = -ray.dir();
         float diff = std::max(interaction.normal.dot(lightDir), 0.0f);
 //        set material of sphere to white.
-        diffuse += diff * Vec3f{1.0f, 1.0f, 1.0f};
+        diffuse += diff * objColor;
         if (lightDir.dot(interaction.normal) > 0) {
             Vec3f reflectDir = -lightDir - 2.0f * interaction.normal.dot(-lightDir) * interaction.normal;
             float spec = (float) std::pow(std::max(viewDir.dot(reflectDir), 0.0f), 64);
-            specular += spec * Vec3f{1.0f, 1.0f, 1.0f};
+            specular += spec * objColor;
         }
     }
 
-    radiance = (diffuse + specular + ambient) * lightColor;
+    radiance = (diffuse + specular + ambient) * scene->lightColor;
     return radiance;
 }

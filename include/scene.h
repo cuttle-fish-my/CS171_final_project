@@ -1,5 +1,6 @@
 #ifndef CS171_FINAL_PROJECT_SCENE_H
 #define CS171_FINAL_PROJECT_SCENE_H
+
 #include <vector>
 #include "common.h"
 #include "AABB.h"
@@ -13,11 +14,13 @@ public:
     std::vector<floatGrid::Ptr> moduleGrids;
     std::vector<floatGrid::Ptr> QGrids;
     std::vector<Vec3fGrid::Ptr> vectorGrids;
+
     TriangleMesh sphere;
-
-
     float min_value{};
     float max_value{};
+
+    Vec3f lightDir{};
+    Vec3f lightColor{};
 
     KDTree tree;
 
@@ -28,9 +31,9 @@ public:
     void setSphere(const TriangleMesh &mesh);
 
     template<typename T, typename GridType>
-    [[nodiscard]] float interpolation(const Vec3f &pos, T& res, const std::vector<GridType> &Grids) const;
+    [[nodiscard]] int interpolation(const Vec3f &pos, T &res, const std::vector<GridType> &Grids) const;
 
-    static float sampleOpacity(float value) ;
+    static float sampleOpacity(float value);
 
     [[nodiscard]] Vec3f sampleEmission(float value, float opacity) const;
 
@@ -39,6 +42,8 @@ public:
     void setVectorGrids(const std::vector<Vec3fGrid::Ptr> &Grids);
 
     void genQGrids();
+
+    void setLight(Vec3f dir, Vec3f color);
 };
 
 #endif //CS171_FINAL_PROJECT_SCENE_H
