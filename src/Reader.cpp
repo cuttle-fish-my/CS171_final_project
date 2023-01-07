@@ -58,8 +58,8 @@ void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::
      * @param dir: the directory of the .obj file
      * @param vertices: the vector of vertices
      * @param normals: the vector of normals
-     * @param v_index: the vector of vertex n_index
-     * @param n_index: the vector of n_index
+     * @param v_indices: the vector of vertex n_indices
+     * @param n_indices: the vector of n_indices
      * */
     std::cout << "loading obj file:" << dir << std::endl;
     tinyobj::ObjReaderConfig reader_config;
