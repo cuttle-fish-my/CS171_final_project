@@ -46,7 +46,7 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
     float dst_opacity = 0;
     float dx;
     int layer;
-    auto accessor = scene->moduleGrids[0]->getAccessor();
+    auto accessor = scene->QGrids[0]->getAccessor();
     bool flag = false;
     while (src_t < t1 - step_size) {
         src_t += step_size;
@@ -55,7 +55,7 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
 
         if (layer != -1) {
             step_size = scene->grids[layer].dx / 2;
-            accessor = scene->moduleGrids[layer]->getAccessor();
+            accessor = scene->QGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
         dst_color += (1 - dst_opacity) * src_color;
@@ -69,10 +69,11 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
                     low_z = ijk + openvdb::Coord{0, 0, -1};
             openvdb::Coord high_x = ijk + openvdb::Coord{1, 0, 0}, high_y = ijk + openvdb::Coord{0, 1, 0},
                     high_z = ijk + openvdb::Coord{0, 0, 1};
+            dx = scene->grids[layer].dx;
             float grad_x = (accessor.getValue(high_x) - accessor.getValue(low_x)) / (2 * dx);
             float grad_y = (accessor.getValue(high_y) - accessor.getValue(low_y)) / (2 * dx);
             float grad_z = (accessor.getValue(high_z) - accessor.getValue(low_z)) / (2 * dx);
-            Vec3f normal = Vec3f{grad_x, grad_y, grad_z};
+            Vec3f normal = -Vec3f{grad_x, grad_y, grad_z};
             normal.normalize();
             Interaction interaction{src_pos, -1, normal};
             dst_color += radiance(ray, interaction, src_color);
@@ -84,16 +85,15 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
 
 Vec3f Integrator::radiance(Ray &ray, Interaction &interaction, Vec3f objColor) const {
     Vec3f radiance;
-    Vec3f ambient{0.1, 0.1, 0.1};
+    Vec3f ambient{0.01, 0.01, 0.01};
     Vec3f diffuse{0, 0, 0};
     Vec3f specular{0, 0, 0};
     Ray shadow_ray{interaction.pos, -scene->lightDir};
     Interaction new_interaction{};
-    if (interaction.dist > 0 && !scene->sphere.intersect(shadow_ray, new_interaction)) {
+    if (interaction.dist < 0 || !scene->sphere.intersect(shadow_ray, new_interaction)) {
         auto lightDir = -scene->lightDir;
         Vec3f viewDir = -ray.dir();
         float diff = std::max(interaction.normal.dot(lightDir), 0.0f);
-//        set material of sphere to white.
         diffuse += diff * objColor;
         if (lightDir.dot(interaction.normal) > 0) {
             Vec3f reflectDir = -lightDir - 2.0f * interaction.normal.dot(-lightDir) * interaction.normal;
