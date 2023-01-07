@@ -12,7 +12,7 @@ public:
 
     void render() const;
 
-    Vec3f radiance(Ray &ray, float t0, float t1 = 0.0f) const;
+    std::pair<Vec3f, float> radiance(Ray &ray, float t0, float t1 = 0.0f) const;
 
     Vec3f radiance(Ray &ray, Interaction &interaction, Vec3f objColor = Vec3f{1, 1, 1}) const;
 
