@@ -13,7 +13,7 @@ void Integrator::render() const {
         std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
     }
     int cnt = 0;
-    scene->grids[0].aabb.adjustLow(Vec3f(5, 0, 0));
+    scene->grids[0].aabb.adjustLow(Vec3f(5.1, 0, 0));
     std::cout << 1 << std::endl;
 #pragma omp parallel for schedule(guided, 2), default(none), shared(cnt, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
