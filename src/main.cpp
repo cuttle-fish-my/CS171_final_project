@@ -23,6 +23,7 @@ int main() {
     scene.setVectorGrids(VectorGrids);
     scene.genQGrids();
     scene.setSphere(sphere);
+    scene.setLight(Vec3f{10, -5, 0}, Vec3f{1, 1, 1});
     Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));
     std::cout << "Start Rendering..." << std::endl;
     auto start = std::chrono::steady_clock::now();

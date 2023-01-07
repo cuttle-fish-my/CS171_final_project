@@ -53,7 +53,7 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
         std::tie(src_color, src_opacity, layer) = scene->getEmissionOpacity(src_pos);
 
         if (layer != -1) {
-            step_size = (float) (scene->moduleGrids[layer]->transform().voxelSize()[0]) / 2;
+            step_size = scene->grids[layer].dx / 2;
             accessor = scene->moduleGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
