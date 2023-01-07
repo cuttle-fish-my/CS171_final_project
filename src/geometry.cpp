@@ -2,10 +2,11 @@
 #include "common.h"
 
 TriangleMesh::TriangleMesh(std::vector<Vec3f> vertices, std::vector<Vec3f> normals, std::vector<int> v_index,
-                           std::vector<int> n_index) : vertices(std::move(vertices)),
-                                                       normals(std::move(normals)),
-                                                       v_indices(std::move(v_index)),
-                                                       n_indices(std::move(n_index)) {}
+                           std::vector<int> n_index, AABB aabb) : vertices(std::move(vertices)),
+                                                                  normals(std::move(normals)),
+                                                                  v_indices(std::move(v_index)),
+                                                                  n_indices(std::move(n_index)),
+                                                                  aabb(aabb) {}
 
 bool TriangleMesh::intersect(Ray &ray, Interaction &interaction) const {
     for (int i = 0; i < v_indices.size() / 3; i++) {

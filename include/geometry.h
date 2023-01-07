@@ -12,7 +12,8 @@ public:
     TriangleMesh(std::vector<Vec3f> vertices,
                  std::vector<Vec3f> normals,
                  std::vector<int> v_index,
-                 std::vector<int> n_index);
+                 std::vector<int> n_index,
+                 AABB aabb);
 
     bool intersect(Ray &ray, Interaction &interaction) const;
 
@@ -22,7 +23,7 @@ public:
     std::vector<Vec3f> normals;
     std::vector<int> v_indices;
     std::vector<int> n_indices;
-    AABB aabb;
+    AABB aabb{};
 };
 
 

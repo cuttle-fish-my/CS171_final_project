@@ -12,8 +12,8 @@ int main() {
     std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/multi-res big.vdb");
     std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
 
-    auto sphere = Reader::loadObj("dataset/sphere.obj");
-    util::applyTransform(sphere, Vec3f(5, 2, 3), 4.0 / 3.0);
+    auto sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.0 / 3.0);
+//    util::applyTransform(sphere, Vec3f(5, 2, 3), 4.0 / 3.0);
 
     std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1200, 600);
 //    Vec3f(10,0,-10)

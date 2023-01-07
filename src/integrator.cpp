@@ -26,8 +26,10 @@ void Integrator::render() const {
                 L += radiance(ray, t0, t1);
             }
             Interaction interaction;
-            if (scene->sphere.intersect(ray, interaction)) {
-                L += radiance(ray, interaction);
+            if (scene->sphere.aabb.intersect(ray, t0, t1)) {
+                if (scene->sphere.intersect(ray, interaction)) {
+                    L += radiance(ray, interaction);
+                }
             }
             camera->getImage()->setPixel(dx, dy, L);
         }

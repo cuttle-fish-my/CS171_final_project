@@ -52,7 +52,7 @@ std::vector<Vec3fGrid::Ptr> Reader::readGrids(const std::string &dir) {
     return grids;
 }
 
-TriangleMesh Reader::loadObj(const std::string &dir) {
+TriangleMesh Reader::loadObj(const std::string &dir, Vec3f translation, float scale) {
     /* Function of loading vertex and index data from a .obj file
      * @param dir: the directory of the .obj file
      * @param vertices: the vector of vertices
@@ -84,8 +84,19 @@ TriangleMesh Reader::loadObj(const std::string &dir) {
     std::vector<int> v_index;
     std::vector<int> n_index;
 
+    float min_x = 1e10, min_y = 1e10, min_z = 1e10;
+    float max_x = -1e10, max_y = -1e10, max_z = -1e10;
+
     for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
-        vertices.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+        Vec3f vec{attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]};
+        vec = scale * vec + translation;
+        vertices.push_back(vec);
+        min_x = std::min(min_x, vec[0]);
+        min_y = std::min(min_y, vec[1]);
+        min_z = std::min(min_z, vec[2]);
+        max_x = std::max(max_x, vec[0]);
+        max_y = std::max(max_y, vec[1]);
+        max_z = std::max(max_z, vec[2]);
     }
 
     for (size_t i = 0; i < attrib.normals.size(); i += 3) {
@@ -105,6 +116,6 @@ TriangleMesh Reader::loadObj(const std::string &dir) {
         }
     }
     std::cout << "loading finished!" << std::endl;
-    return {vertices, normals, v_index, n_index};
+    return {vertices, normals, v_index, n_index, AABB{Vec3f{min_x, min_y, min_z}, Vec3f{max_x, max_y, max_z}}};
 }
 

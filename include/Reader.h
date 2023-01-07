@@ -16,7 +16,7 @@ public:
     static std::vector<Vec3fGrid::Ptr> readGrids(const std::string &dir);
 
 //    load vertex and index data from a .obj file
-    static TriangleMesh loadObj(const std::string &dir);
+    static TriangleMesh loadObj(const std::string &dir, Vec3f translation, float scale);
 };
 
 
