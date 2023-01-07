@@ -48,8 +48,9 @@ bool AABB::inAABB(Vec3f point) const {
            point[2] < upper_bnd[2];
 }
 
-void AABB::adjustLow(Vec3f shift) {
-    lower_bnd += shift;
+void AABB::adjust(Vec3f low, Vec3f up) {
+    lower_bnd += low;
+    upper_bnd += up;
 }
 
 vdbGrid::vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid), dx(float(grid->transform().voxelSize()[0])) {

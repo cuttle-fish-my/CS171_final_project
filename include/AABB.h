@@ -19,7 +19,7 @@ struct AABB {
 
     [[nodiscard]] bool inAABB(Vec3f point) const;
 
-    void adjustLow(Vec3f shift);
+    void adjust(Vec3f low, Vec3f up);
 };
 
 struct vdbGrid {
