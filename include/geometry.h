@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "interaction.h"
+#include "AABB.h"
 
 class TriangleMesh {
 public:
@@ -21,6 +22,7 @@ public:
     std::vector<Vec3f> normals;
     std::vector<int> v_indices;
     std::vector<int> n_indices;
+    AABB aabb;
 };
 
 

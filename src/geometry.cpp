@@ -16,9 +16,6 @@ bool TriangleMesh::intersect(Ray &ray, Interaction &interaction) const {
             interaction = temp;
         }
     }
-    if (interaction.dist < RAY_DEFAULT_MAX) {
-        std::cout << (interaction.dist < RAY_DEFAULT_MAX) << std::endl;
-    }
     return interaction.dist < RAY_DEFAULT_MAX;
 }
 
