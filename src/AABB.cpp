@@ -49,7 +49,8 @@ bool AABB::inAABB(Vec3f point) const {
 }
 
 vdbGrid::vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid), dx(float(grid->transform().voxelSize()[0])) {
-    auto min_max = openvdb::tools::minMax(grid->tree());
-    min_value = min_max.min();
-    max_value = min_max.max();
+//    auto min_max = openvdb::tools::minMax(grid->tree());
+    grid->evalMinMax(min_value, max_value);
+//    min_value = min_max.min();
+//    max_value = min_max.max();
 }
