@@ -55,18 +55,14 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
 
         dst_color += (1 - dst_opacity) * src_color;
-        if (src_opacity > 1) {
-            dst_opacity = 1;
-        } else {
-            dst_opacity += (1 - dst_opacity) * src_opacity;
-        }
+        dst_opacity += (1 - dst_opacity) * src_opacity;
     }
     return dst_color;
 }
 
 Vec3f Integrator::radiance(Ray &ray, Interaction &interaction) const {
     Vec3f radiance(0, 0, 0);
-    Vec3f lightDir{10, -5, -10};
+    Vec3f lightDir{10, -5, 0};
     Vec3f lightColor{1, 1, 1};
     lightDir.normalize();
     Vec3f ambient{0.1, 0.1, 0.1};
