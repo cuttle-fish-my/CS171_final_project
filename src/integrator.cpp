@@ -38,35 +38,35 @@ void Integrator::render() const {
 }
 
 Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 2;
-    Vec3f src_color = Vec3f{0, 0, 0};
-    float src_opacity = 0;
-    auto dst_t = (float) fmax(t0 - step_size, ray.t0());
-    Vec3f dst_pos, dst_color;
-    float dst_opacity=0;
+    float step_size = scene->grids[0].dx / 4;
+    Vec3f src_color;
+    float src_opacity;
+    auto src_t = (float) fmax(t0 - step_size, ray.t0());
+    Vec3f src_pos, dst_color = Vec3f{0, 0, 0};
+    float dst_opacity = 0;
     float dx;
-    while (dst_t < t1 - step_size) {
-        if (dst_opacity > 1) break;
-        dst_t += step_size;
-        dst_pos = ray(dst_t);
-        std::tie(dst_color, dst_opacity, dx) = scene->getEmissionOpacity(dst_pos);
-        if (dx != 0) step_size = dx / 2;
+    while (src_t < t1 - step_size) {
+        src_t += step_size;
+        src_pos = ray(src_t);
+        std::tie(src_color, src_opacity, dx) = scene->getEmissionOpacity(src_pos);
+        if (dx != 0) step_size = dx / 4;
 
-        dst_color *= step_size;
-        dst_opacity = 1 - std::pow(1 - dst_opacity, step_size);
+//        src_color *= step_size;
+        src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
 
         dst_color += (1 - dst_opacity) * src_color;
-        dst_opacity += (1 - dst_opacity) * src_opacity;
-
-        src_color = dst_color;
-        src_opacity = dst_opacity;
+        if (src_opacity > 1) {
+            dst_opacity = 1;
+        } else {
+            dst_opacity += (1 - dst_opacity) * src_opacity;
+        }
     }
     return dst_color;
 }
 
 Vec3f Integrator::radiance(Ray &ray, Interaction &interaction) const {
     Vec3f radiance(0, 0, 0);
-    Vec3f lightDir{10, -5, 10};
+    Vec3f lightDir{10, -5, -10};
     Vec3f lightColor{1, 1, 1};
     lightDir.normalize();
     Vec3f ambient{0.1, 0.1, 0.1};
