@@ -48,6 +48,10 @@ bool AABB::inAABB(Vec3f point) const {
            point[2] < upper_bnd[2];
 }
 
+void AABB::adjustLow(Vec3f shift) {
+    lower_bnd += shift;
+}
+
 vdbGrid::vdbGrid(const floatGrid::Ptr &grid) : grid(grid), aabb(grid), dx(float(grid->transform().voxelSize()[0])) {
 //    auto min_max = openvdb::tools::minMax(grid->tree());
     grid->evalMinMax(min_value, max_value);

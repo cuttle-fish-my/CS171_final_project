@@ -18,6 +18,8 @@ struct AABB {
     [[nodiscard]] bool isOverlap(const AABB &other) const;
 
     [[nodiscard]] bool inAABB(Vec3f point) const;
+
+    void adjustLow(Vec3f shift);
 };
 
 struct vdbGrid {

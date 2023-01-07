@@ -13,6 +13,8 @@ void Integrator::render() const {
         std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
     }
     int cnt = 0;
+    scene->grids[0].aabb.adjustLow(Vec3f(5, 0, 0));
+    std::cout << 1 << std::endl;
 #pragma omp parallel for schedule(guided, 2), default(none), shared(cnt, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
 #pragma omp atomic
@@ -27,7 +29,7 @@ void Integrator::render() const {
             if (scene->sphere.aabb.intersect(ray, t0, t1)) {
                 if (scene->sphere.intersect(ray, interaction)) {
                     t_max = interaction.dist;
-                    phongColor = radiance(ray, interaction);
+                    phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
                 }
             }
             if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
@@ -36,6 +38,8 @@ void Integrator::render() const {
                 if (colorOpacity.second < 1 - 1e-3) {
                     L += phongColor;
                 }
+            } else {
+                L += phongColor;
             }
 
             camera->getImage()->setPixel(dx, dy, L);
@@ -92,7 +96,8 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
 
 Vec3f Integrator::radiance(Ray &ray, Interaction &interaction, Vec3f objColor) const {
     Vec3f radiance;
-    Vec3f ambient{0.20, 0.20, 0.20};
+    Vec3f ambient(objColor);
+    ambient /= 10;
     Vec3f diffuse{0, 0, 0};
     Vec3f specular{0, 0, 0};
     Ray shadow_ray{interaction.pos, -scene->lightDir};
@@ -104,7 +109,7 @@ Vec3f Integrator::radiance(Ray &ray, Interaction &interaction, Vec3f objColor) c
         diffuse += diff * objColor;
         if (lightDir.dot(interaction.normal) > 0) {
             Vec3f reflectDir = -lightDir - 2.0f * interaction.normal.dot(-lightDir) * interaction.normal;
-            float spec = (float) std::pow(std::max(viewDir.dot(reflectDir), 0.0f), 64);
+            float spec = (float) std::pow(std::max(viewDir.dot(reflectDir), 0.0f), 32);
             specular += spec * objColor;
         }
     }
