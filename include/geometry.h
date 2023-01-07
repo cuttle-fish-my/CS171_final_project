@@ -15,15 +15,7 @@ public:
 
     bool intersect(Ray &ray, Interaction &interaction) const;
 
-    std::vector<Vec3f> getVertices();
 
-    std::vector<Vec3f> getNormals();
-
-    std::vector<int> getVIndex();
-
-    std::vector<int> getNIndex();
-
-private:
     bool intersectOneTriangle(Ray &ray, Interaction &interaction, const Vec3i &v_idx, const Vec3i &n_idx) const;
     std::vector<Vec3f> vertices;
     std::vector<Vec3f> normals;

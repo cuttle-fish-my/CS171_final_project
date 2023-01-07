@@ -16,24 +16,12 @@ bool TriangleMesh::intersect(Ray &ray, Interaction &interaction) const {
             interaction = temp;
         }
     }
+    if (interaction.dist < RAY_DEFAULT_MAX) {
+        std::cout << (interaction.dist < RAY_DEFAULT_MAX) << std::endl;
+    }
     return interaction.dist < RAY_DEFAULT_MAX;
 }
 
-std::vector<Vec3f> TriangleMesh::getVertices() {
-    return vertices;
-}
-
-std::vector<Vec3f> TriangleMesh::getNormals() {
-    return normals;
-}
-
-std::vector<int> TriangleMesh::getVIndex() {
-    return v_indices;
-}
-
-std::vector<int> TriangleMesh::getNIndex() {
-    return n_indices;
-}
 
 bool
 TriangleMesh::intersectOneTriangle(Ray &ray, Interaction &interaction, const Vec3i &v_idx, const Vec3i &n_idx) const {

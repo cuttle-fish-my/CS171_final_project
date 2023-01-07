@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "AABB.h"
+#include "geometry.h"
 
 namespace util {
     static inline float clamp01(float v) {
@@ -31,6 +32,12 @@ namespace util {
             Grids.emplace_back(scalarGrid);
         }
         return Grids;
+    }
+
+    static void applyTransform(TriangleMesh &sphere, Vec3f translation, float scale) {
+        for (auto &v: sphere.vertices) {
+            v = scale * v + translation;
+        }
     }
 }
 

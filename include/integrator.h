@@ -11,6 +11,7 @@ public:
     Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene);
     void render() const;
     Vec3f radiance(Ray &ray, float t0, float t1 = 0.0f) const;
+    Vec3f radiance(Ray &ray, Interaction &interaction) const;
 private:
     std::shared_ptr<Camera> camera;
     std::shared_ptr<Scene> scene;

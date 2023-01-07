@@ -189,3 +189,7 @@ void Scene::genQGrids() {
         QGrids.push_back(qGrid);
     }
 }
+
+void Scene::setSphere(const TriangleMesh &mesh) {
+    sphere = mesh;
+}

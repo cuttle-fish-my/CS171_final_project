@@ -52,8 +52,7 @@ std::vector<Vec3fGrid::Ptr> Reader::readGrids(const std::string &dir) {
     return grids;
 }
 
-void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::vector<Vec3f> &normals,
-                     std::vector<int> &v_index, std::vector<int> &n_index) {
+TriangleMesh Reader::loadObj(const std::string &dir) {
     /* Function of loading vertex and index data from a .obj file
      * @param dir: the directory of the .obj file
      * @param vertices: the vector of vertices
@@ -80,6 +79,11 @@ void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::
     auto &attrib = reader.GetAttrib();
     auto &shapes = reader.GetShapes();
 
+    std::vector<Vec3f> vertices;
+    std::vector<Vec3f> normals;
+    std::vector<int> v_index;
+    std::vector<int> n_index;
+
     for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
         vertices.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
     }
@@ -101,5 +105,6 @@ void Reader::loadObj(const std::string &dir, std::vector<Vec3f> &vertices, std::
         }
     }
     std::cout << "loading finished!" << std::endl;
+    return {vertices, normals, v_index, n_index};
 }
 
