@@ -1,7 +1,7 @@
 #include "scene.h"
 
 float isoValue = 0.05f;
-float margin = 0.04f;
+float margin = 0.02f;
 
 void Scene::setGrids(const std::vector<vdbGrid> &Grids) {
     grids = Grids;
@@ -113,8 +113,13 @@ float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType>
 }
 
 float Scene::sampleOpacity(float value) {
-    if (value < isoValue + margin && value > isoValue) {
-        return std::exp(-std::abs(value - 0.05f));
+//    if (value < isoValue + margin && value > isoValue) {
+//        return std::exp(-std::abs(value - 0.05f));
+//    } else {
+//        return 0;
+//    }
+    if (value > isoValue) {
+        return 1;
     } else {
         return 0;
     }
