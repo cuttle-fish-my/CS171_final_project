@@ -113,8 +113,8 @@ float Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType>
 }
 
 float Scene::sampleOpacity(float value) {
-    if (value < isoValue + margin && value > isoValue - margin) {
-        return std::exp(-std::abs(value - 0.05f) * 10);
+    if (value < isoValue + margin && value > isoValue) {
+        return std::exp(-std::abs(value - 0.05f));
     } else {
         return 0;
     }
