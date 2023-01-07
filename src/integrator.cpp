@@ -8,7 +8,7 @@ Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene
 }
 
 void Integrator::render() const {
-    const int superSample = 1;
+    const int superSample = 2;
     std::vector<std::pair<float, float>> offsets;
     for (int i = 0; i < superSample; ++i) {
         for (int j = 0; j < superSample; ++j) {
@@ -30,7 +30,9 @@ void Integrator::render() const {
         std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
     }
     int cnt = 0;
-    scene->grids[0].aabb.adjust(Vec3f(5.1, 1.0, 2.0), Vec3f(-0.5, -1.0, -2.0));
+//    scene->grids[0].aabb.adjust(Vec3f(5.1, 1.0, 2.0), Vec3f(-0.5, -1.0, -2.0));
+    scene->grids[0].aabb.adjust(Vec3f(4.1, 1.0, 2.0), Vec3f(-0.5, -1.0, -2.0));
+
 #pragma omp parallel for schedule(guided, 2), default(none), shared(cnt), firstprivate(offsets, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
 #pragma omp atomic
