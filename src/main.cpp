@@ -14,7 +14,7 @@ int main() {
 
     auto sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.2 / 3.0);
 
-    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1920, 1080);
+    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(3840, 2160);
     Camera cam(Vec3f(3, 3.2, 15), 19.5, 1, Vec3f(10,0,-10), Vec3f(0, 1, 0), image);
     Scene scene;
     scene.setGrids(ScalarGrids);

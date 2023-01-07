@@ -8,48 +8,65 @@ Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene
 }
 
 void Integrator::render() const {
+    const int superSample = 4;
+    std::vector<std::pair<float, float>> offsets;
+    for (int i = 0; i < superSample; ++i) {
+        for (int j = 0; j < superSample; ++j) {
+            offsets.emplace_back((static_cast<float>(i) + 0.5f) / static_cast<float>(superSample), (static_cast<float>(j) + 0.5f) / static_cast<float>(superSample));
+        }
+    }
+    constexpr auto angle = 26.6f / 180.0f * PI;
+    std::pair<std::pair<float, float>, std::pair<float, float>> rotate{
+            {cosf(angle), -sinf(angle)},
+            {sinf(angle), cosf(angle)}};
+    for (auto &offset: offsets) {
+        auto [a, b] = offset;
+        offset = {rotate.first.first * a + rotate.first.second * b,
+                  rotate.second.first * a + rotate.second.second * b};
+    }
+
     Vec2i resolution = camera->getImage()->getResolution();
     for (auto &grid: scene->grids) {
         std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
     }
     int cnt = 0;
     scene->grids[0].aabb.adjustLow(Vec3f(5.1, 0, 0));
-    std::cout << 1 << std::endl;
-#pragma omp parallel for schedule(guided, 2), default(none), shared(cnt, resolution)
+#pragma omp parallel for schedule(guided, 2), default(none), shared(cnt), firstprivate(offsets, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
 #pragma omp atomic
         ++cnt;
         printf("\r%.02f%%", cnt * 100.0 / resolution.x());
         for (int dy = 0; dy < resolution.y(); dy++) {
             Vec3f L(0, 0, 0);
-            Ray ray = camera->generateRay((float) dx, (float) dy);
-            float t0, t1, t_max = 1e10;
-            Vec3f phongColor(0);
-            Interaction interaction;
-            if (scene->sphere.aabb.intersect(ray, t0, t1)) {
-                if (scene->sphere.intersect(ray, interaction)) {
-                    t_max = interaction.dist;
-                    phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
+            for (const auto &offset: offsets) {
+                Ray ray = camera->generateRay((float) dx + offset.first, (float) dy + offset.second);
+                float t0, t1, t_max = 1e10;
+                Vec3f phongColor(0);
+                Interaction interaction;
+                if (scene->sphere.aabb.intersect(ray, t0, t1)) {
+                    if (scene->sphere.intersect(ray, interaction)) {
+                        t_max = interaction.dist;
+                        phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
+                    }
                 }
-            }
-            if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
-                auto colorOpacity = radiance(ray, t0, std::min(t1, t_max));
-                L += colorOpacity.first;
-                if (colorOpacity.second < 1 - 1e-3) {
+                if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
+                    auto colorOpacity = radiance(ray, t0, std::min(t1, t_max));
+                    L += colorOpacity.first;
+                    if (colorOpacity.second < 1 - 1e-3) {
+                        L += phongColor;
+                    }
+                } else {
                     L += phongColor;
                 }
-            } else {
-                L += phongColor;
             }
-
-            camera->getImage()->setPixel(dx, dy, L);
+            camera->getImage()->setPixel(dx, dy, L / offsets.size());
         }
     }
 
 }
 
 std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 2;
+    float step_size = scene->grids[0].dx / 32;
     Vec3f src_color;
     float src_opacity;
     auto src_t = (float) fmax(t0 - step_size, ray.t0());
@@ -65,7 +82,7 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
         std::tie(src_color, src_opacity, layer) = scene->getEmissionOpacity(src_pos);
 
         if (layer != -1) {
-            step_size = scene->grids[layer].dx / 2;
+            step_size = scene->grids[layer].dx / 32;
 //            accessor = scene->QGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
