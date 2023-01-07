@@ -139,7 +139,14 @@ Vec3f Scene::sampleEmission(float value, float opacity) const {
         d_coef = 1 - (max_value - value) / range;
     }
 
-    return 2 * (a_coef * A + b_coef * B + c_coef * C + d_coef * D) * opacity;
+    auto color = a_coef * A + b_coef * B + c_coef * C + d_coef * D;
+    if (opacity < 1e-3) {
+        return {0, 0, 0};
+    } else {
+        return 2 * color;
+    }
+
+//    return 2 * (a_coef * A + b_coef * B + c_coef * C + d_coef * D) * opacity;
 }
 
 std::tuple<Vec3f, float, float> Scene::getEmissionOpacity(Vec3f value) const {

@@ -31,7 +31,7 @@ void Integrator::render() const {
 }
 
 Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 8;
+    float step_size = scene->grids[0].dx / 2;
     Vec3f src_color = Vec3f{0, 0, 0};
     float src_opacity = 0;
     auto dst_t = (float) fmax(t0 - step_size, ray.t0());
@@ -42,7 +42,7 @@ Vec3f Integrator::radiance(Ray &ray, float t0, float t1) const {
         dst_t += step_size;
         dst_pos = ray(dst_t);
         std::tie(dst_color, dst_opacity, dx) = scene->getEmissionOpacity(dst_pos);
-        if (dx != 0) step_size = dx / 8;
+        if (dx != 0) step_size = dx / 2;
 
         dst_color *= step_size;
         dst_opacity = 1 - std::pow(1 - dst_opacity, step_size);
