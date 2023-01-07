@@ -83,7 +83,7 @@ Vec3f Integrator::radiance(Ray &ray, Interaction &interaction) const {
         diffuse += diff * Vec3f{1.0f, 1.0f, 1.0f};
         if (lightDir.dot(interaction.normal) > 0) {
             Vec3f reflectDir = -lightDir - 2.0f * interaction.normal.dot(-lightDir) * interaction.normal;
-            float spec = (float) std::pow(std::max(viewDir.dot(reflectDir), 0.0f), 32);
+            float spec = (float) std::pow(std::max(viewDir.dot(reflectDir), 0.0f), 64);
             specular += spec * Vec3f{1.0f, 1.0f, 1.0f};
         }
     }
