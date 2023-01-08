@@ -8,7 +8,7 @@ Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene
 }
 
 void Integrator::render() const {
-    const int superSample = 2;
+    const int superSample = 1;
     std::vector<std::pair<float, float>> offsets;
     for (int i = 0; i < superSample; ++i) {
         for (int j = 0; j < superSample; ++j) {
@@ -30,8 +30,8 @@ void Integrator::render() const {
         std::cout << grid.aabb.lower_bnd << " " << grid.aabb.upper_bnd << std::endl;
     }
     int cnt = 0;
-//    scene->grids[0].aabb.adjust(Vec3f(5.1, 1.0, 2.0), Vec3f(-0.5, -1.0, -2.0));
-    scene->grids[0].aabb.adjust(Vec3f(4.1, 1.0, 2.0), Vec3f(-0.5, -1.0, -2.0));
+    scene->grids[0].aabb.adjust(Vec3f(5.1, 0.8, 2.0), Vec3f(-0.5, -0.7, -2.0));
+//    scene->grids[0].aabb.adjust(Vec3f(4.1, 0.8, 2.0), Vec3f(-0.5, -0.7, -2.0));
 
 #pragma omp parallel for schedule(guided, 2), default(none), shared(cnt), firstprivate(offsets, resolution)
     for (int dx = 0; dx < resolution.x(); dx++) {
@@ -90,6 +90,7 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
         dst_color += (1 - dst_opacity) * src_color;
         dst_opacity += (1 - dst_opacity) * src_opacity;
+        if (src_opacity > 1 - 1e-2) break;
 //        if (src_opacity != 0 && !flag) {
 //            if (layer == -1) {
 //                std::cerr << "Error: src_opacity != 0 but layer == -1" << std::endl;
