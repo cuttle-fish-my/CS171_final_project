@@ -16,6 +16,7 @@ public:
     std::vector<Vec3fGrid::Ptr> vectorGrids;
 
     TriangleMesh sphere;
+    TriangleMesh dilated_sphere;
     float min_value{};
     float max_value{};
 
@@ -29,6 +30,8 @@ public:
     void setGrids(const std::vector<vdbGrid> &Grids);
 
     void setSphere(const TriangleMesh &mesh);
+
+    void setDilatedSphere(const TriangleMesh &mesh);
 
     template<typename T, typename GridType>
     [[nodiscard]] int interpolation(const Vec3f &pos, T &res, const std::vector<GridType> &Grids) const;

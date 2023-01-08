@@ -198,3 +198,7 @@ void Scene::setLight(Vec3f dir, Vec3f color) {
     lightColor = color;
     lightDir.normalize();
 }
+
+void Scene::setDilatedSphere(const TriangleMesh &mesh) {
+    dilated_sphere = mesh;
+}

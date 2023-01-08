@@ -46,9 +46,11 @@ void Integrator::render() const {
                 Vec3f phongColor(0);
                 Interaction interaction;
                 if (scene->sphere.aabb.intersect(ray, t0, t1)) {
-                    if (scene->sphere.intersect(ray, interaction)) {
+                    if (scene->dilated_sphere.intersect(ray, interaction)) {
                         t_max = interaction.dist;
-                        phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
+                        if (scene->sphere.intersect(ray, interaction)) {
+                            phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
+                        }
                     }
                 }
                 if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
@@ -68,7 +70,7 @@ void Integrator::render() const {
 }
 
 std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 16;
+    float step_size = scene->grids[0].dx / 2;
     Vec3f src_color;
     float src_opacity;
     auto src_t = (float) fmax(t0 - step_size, ray.t0());
@@ -84,7 +86,7 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
         std::tie(src_color, src_opacity, layer) = scene->getEmissionOpacity(src_pos);
 
         if (layer != -1) {
-            step_size = scene->grids[layer].dx / 16;
+            step_size = scene->grids[layer].dx / 2;
 //            accessor = scene->QGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));

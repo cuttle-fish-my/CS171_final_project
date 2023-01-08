@@ -9,12 +9,14 @@
 
 int main() {
     setbuf(stdout, nullptr);
-    std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/single-res small.vdb");
+    std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/multi-res big.vdb");
     std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
 
-    auto sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.2 / 3.0);
+    auto sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.0 / 3.0);
 
-    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(3840, 2160);
+    auto dilated_sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.2 / 3.0);
+
+    std::shared_ptr<ImageRGB> image = std::make_shared<ImageRGB>(1920, 1080);
     Camera cam(Vec3f(3, 3.2, 15), 19.5, 1, Vec3f(10,0,-10), Vec3f(0, 1, 0), image);
 //    Camera cam(Vec3f(3, 15, 0), 19.5, 1, Vec3f(10,-10,0), Vec3f(0, 1, 0), image);
     Scene scene;
@@ -22,6 +24,7 @@ int main() {
     scene.setVectorGrids(VectorGrids);
     scene.genQGrids();
     scene.setSphere(sphere);
+    scene.setDilatedSphere(dilated_sphere);
     scene.setLight(Vec3f{10, -5, -2}, Vec3f{1, 1, 1});
     Integrator integrator(std::make_shared<Camera>(cam), std::make_shared<Scene>(scene));
     std::cout << "Start Rendering..." << std::endl;
