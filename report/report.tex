@@ -54,6 +54,50 @@
 
     \section{Implementation Details}\label{sec:implementation-details}
 
+    \subsection{data preprocessing}\label{subsec:data-preprocessing}
+    In this project, we dealt with \emph{.vdb} files and try to visualize four different multi-resolution grids.
+    In order to accomplish that, we utilized \emph{openvdb} library to read the \emph{.vdb} files and extract the grids.F
+    Given that the vdb grids are actually velocity field around a sphere which is a vector field, we need to perform scalarization:
+    \begin{enumerate}
+        \item Turn the velocity field into a scalar field by using the magnitude of the velocity field.
+        \item Calculate the q-criteria of the velocity field.
+        \par Q-criteria is a scalar field that is used to determine the quality of the flow.
+        It is defined as:
+        \begin{equation}
+            Q = -\frac{1}{2}\left( \left( \frac{\partial u}{\partial x} \right)^2 + \left( \frac{\partial v}{\partial y} \right)^2 + \left( \frac{\partial w}{\partial z} \right)^2 \right) - \frac{\partial u}{\partial y}\frac{\partial v}{\partial x} - \frac{\partial u}{\partial z}\frac{\partial w}{\partial x} - \frac{\partial v}{\partial z}\frac{\partial w}{\partial y}\label{eq:equation}
+        \end{equation}
+        where $u$, $v$, $w$ are the velocity components in the $x$, $y$, $z$ directions respectively.
+        \par As for calculating the gradient, we use the \emph{Central Finite Difference Approximations}, which defines as follows:
+        \begin{align*}
+            f'(x)=\frac{f(x+h)-f(x-h)}{2h}
+        \end{align*}
+        with ths approximation, we can efficiently calculate the q-criteria from a discrete velocity field.
+        \par Moreover, q-criteria field has a property that the gradient always points to the interior of the flow, which is useful when designing the transfer function.
+    \end{enumerate}
+
+    \subsection{k-d tree}\label{subsec:k-d-tree}
+
+    \subsection{transfer function}\label{subsec:transfer-function}
+    In this project, we use different scalar field to map scalar to color and opacity.
+    For opacity, we use q-criteria as the input of transfer function.
+    Next, we will show the detail of opacity transfer function:
+    Assume that we want to visualize the q-criteria with iso-value $i$, then we set opacity as follows:
+    \begin{align*}
+        opacity = \left\{
+        \begin{aligned}
+            1&\quad if\ q \geq i\\
+            0&\quad elsewhere
+        \end{aligned}
+        \right.
+    \end{align*}
+    The reason why we can simply set opacity above has been mentioned in~\ref{subsec:data-preprocessing}, since the gradient of q-criteria field always points to the interior of the iso-surface, we know that the iso-value of interior side is always larger than the exterior side.
+
+    \subsection{volume rendering}\label{subsec:volume-rendering}
+
+    \subsection{object rendering}\label{subsec:object-rendering}
+
+    \subsection{object filter}\label{subsec:object-filter}
+
 
     \section{Results}\label{sec:results}
 
