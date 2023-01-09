@@ -152,12 +152,135 @@ return {dst_color, dst_opacity};
     However, even this procedure can vanish most volumes attach to the sphere, there are still tiny pitches that levitate above the sphere.
     In order to solve those pitches, we adjust the size of bounding box so that those pitches are beyond the bounding box.
 
-
-    \subsection{object filter}\label{subsec:object-filter}
+    For each pixel in the output image, we perform the following code:
+    \begin{lstlisting}[label={lst:lstlisting3}]
+Vec3f L(0, 0, 0);
+float t0, t1, t_max = 1e10;
+Vec3f phongColor(0);
+Interaction interaction;
+if (scene->sphere.aabb.intersect(ray, t0, t1)) {
+   if (scene->dilated_sphere.intersect(ray, interaction)) {
+       t_max = interaction.dist;
+       if (scene->sphere.intersect(ray, interaction)) {
+           phongColor = radiance(ray, interaction, Vec3f{4, 1.5, 0});
+       }
+   }
+}
+if (scene->grids[0].aabb.intersect(ray, t0, t1)) {
+    auto colorOpacity = radiance(ray, t0, std::min(t1, t_max));
+    L += colorOpacity.first;
+    if (colorOpacity.second < 1 - 1e-3) {
+        L += phongColor;
+    }
+} else {
+    L += phongColor;
+}
+camera->getImage()->setPixel(dx, dy, L);
+    \end{lstlisting}
 
 
     \section{Results}\label{sec:results}
+    This part we will show the rendering results for different models and with different rendering configurations.
 
+    \subsection{multi-resolution big model}\label{subsec:multi-resolution-big-model}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_big_4k_16_filter}
+        \caption{Multi-resolution big field, 4k resolution, $ \frac{dx}{16} $ step size with object filtering (iso-value = 0.05)}\label{fig:figure1}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_big_4k_16_no_filter}
+        \caption{Multi-resolution big field, 4k resolution, $ \frac{dx}{16} $ step size without object filtering (iso-value = 0.05)}\label{fig:figure2}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_big_1080p_8_filter_4XRES}
+        \caption{Multi-resolution big field, 1080p resolution, $ \frac{dx}{8} $ step size with object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure3}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_big_1080p_8_no_filter_4XRES}
+        \caption{Multi-resolution big field, 1080p resolution, $ \frac{dx}{8} $ step size without object filtering and 4X super resolution anti-aliasing  (iso-value = 0.05)}\label{fig:figure4}
+    \end{figure}
+
+    \subsection{multi-resolution small model}\label{subsec:multi-resolution-small-model}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_small_4k_16_filter}
+        \caption{Multi-resolution small field, 4k resolution, $ \frac{dx}{16} $ step size with object filtering (iso-value = 0.05)}\label{fig:figure5}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_small_4k_16_no_filter}
+        \caption{Multi-resolution small field, 4k resolution, $ \frac{dx}{16} $ step size without object filtering (iso-value = 0.05)}\label{fig:figure6}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_small_1080p_8_filter_4XRES}
+        \caption{Multi-resolution small field, 1080p resolution, $ \frac{dx}{8} $ step size with object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure7}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/multi_small_1080p_8_no_filter_4XRES}
+        \caption{Multi-resolution small field, 1080p resolution, $ \frac{dx}{8} $ step size without object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure8}
+    \end{figure}
+
+    \subsection{single-resolution big model}\label{subsec:single-resolution-big-model}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_big_4k_16_filter}
+        \caption{Single-resolution big field, 4k resolution, $ \frac{dx}{16} $ step size with object filtering (iso-value = 0.05)}\label{fig:figure9}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_big_4k_16_no_filter}
+        \caption{Single-resolution big field, 4k resolution, $ \frac{dx}{16} $ step size without object filtering (iso-value = 0.05)}\label{fig:figure10}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_big_1080p_8_filter_4XRES}
+        \caption{Single-resolution big field, 1080p resolution, $ \frac{dx}{8} $ step size with object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure11}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_big_1080p_8_no_filter_4XRES}
+        \caption{Single-resolution big field, 1080p resolution, $ \frac{dx}{8} $ step size without object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure12}
+    \end{figure}
+
+    \subsection{single-resolution small model}\label{subsec:single-resolution-small-model}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_small_4k_16_filter}
+        \caption{Single-resolution small field, 4k resolution, $ \frac{dx}{16} $ step size with object filtering (iso-value = 0.05)}\label{fig:figure13}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_small_4k_16_no_filter}
+        \caption{Single-resolution small field, 4k resolution, $ \frac{dx}{16} $ step size without object filtering (iso-value = 0.05)}\label{fig:figure14}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_small_1080p_8_filter_4XRES}
+        \caption{Single-resolution small field, 1080p resolution, $ \frac{dx}{8} $ step size with object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure15}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.45\textwidth]{./image/single_small_1080p_8_no_filter_4XRES}
+        \caption{Single-resolution small field, 1080p resolution, $ \frac{dx}{8} $ step size without object filtering and 4X super resolution anti-aliasing (iso-value = 0.05)}\label{fig:figure16}
+    \end{figure}
 
     \section{Division of work}\label{sec:division-of-work}
 
