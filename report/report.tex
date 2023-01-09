@@ -13,7 +13,7 @@
 %\makeatother
 \lstset{language=C++,
     breaklines=true,
-    basicstyle=\ttfamily,
+%    basicstyle=\ttfamily,
     keywordstyle=\color{blve}\ttfamily,
     stringstyle=\color{red}\ttfamily,
     commentstyle=\color{magenta}\ttfamily,
@@ -22,7 +22,7 @@
     tabsize=2,
     morekeywords={Vec3f, Interaction},
 }
-\lstset{basicstyle=\ttfamily}
+%\lstset{basicstyle=\ttfamily}
 
 
 % Title portion
@@ -47,8 +47,7 @@
         \item k-d tree
         \item transfer function
         \item volume rendering
-        \item object rendering
-        \item object filter
+        \item object rendering and object filtering
     \end{itemize}
 
 
@@ -91,10 +90,68 @@
         \right.
     \end{align*}
     The reason why we can simply set opacity above has been mentioned in~\ref{subsec:data-preprocessing}, since the gradient of q-criteria field always points to the interior of the iso-surface, we know that the iso-value of interior side is always larger than the exterior side.
+    Based on that, if we use \emph{front-to-back} algorithm to perform volume rendering and apply \emph{early termination} like
+    \begin{lstlisting}[label={lst:lstlisting}]
+        if (src_opacity > 1 - 1e-2) break;
+    \end{lstlisting}
+    we can guarantee the correctness of the rendering result and in the meanwhile, achieve efficiency.
+
+    For color, we use module of velocity field as the input of transfer function.
+    We perform a linear interpolation between four colors with the following procedure:
+
+    We first divided the range of the module of velocity field into four parts, and then we set the color of each part as follows:
+
+    Assume we are in part $[m_0, m_1]$ and get module $m$, and the corresponding color of $m_0,m_1$ are $c_0, c_1$ resp.~ then the the corresponding color of $m$ is
+    \[c=\frac{m_1-m}{m_1-m_0}\times c_0 + \frac{m-m_0}{m_1-m_0}\times c_1\]
 
     \subsection{volume rendering}\label{subsec:volume-rendering}
+    For the volume rendering part, we use \emph{front-to-back} algorithm to rendering the turbulence.
+    The procedure of \emph{front-to-back} algorithm is as follows:
+    \begin{itemize}
+        \item Initialize destination opacity and destination color to 0.
+        \item Marching \emph{step\_size} length along the ray and get the source opacity and color.
+        \item Accumulate opacity and color with the following formulas:
+        \begin{align*}
+            C_{dst} &= C_{dst} + (1-\alpha_{dst}) \times C_{src}\\
+            \alpha_{dst} &= \alpha_{dst} + (1-\alpha_{dst})\times \alpha_{src}
+        \end{align*}
+        where $C_{dst}, C_{src}$ are the color of destination and source resp.~ and $\alpha_{dst}, \alpha_{src}$ are the opacity of destination and source resp.
+        \item Once we march beyond limit or the source opacity $> 0.99$ , we terminate.
+    \end{itemize}
+    We attached the code:
+    \begin{lstlisting}[label={lst:lstlisting2}]
+float step_size = scene->grids[0].dx / 16;
+Vec3f src_color;
+float src_opacity;
+auto src_t = (float) fmax(t0 - step_size, ray.t0());
+Vec3f src_pos, dst_color = Vec3f{0, 0, 0};
+float dst_opacity = 0;
+float dx;
+while (src_t < t1) {
+    src_t += step_size;
+    src_pos = ray(src_t);
+    std::tie(src_color, src_opacity, dx) = scene->getEmissionOpacity(src_pos);
+    step_size = dx / 16;
+    src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
+    dst_color += (1 - dst_opacity) * src_color;
+    dst_opacity += (1 - dst_opacity) * src_opacity;
+    if (src_opacity > 1 - 1e-2) break;
+}
+return {dst_color, dst_opacity};
+    \end{lstlisting}
 
-    \subsection{object rendering}\label{subsec:object-rendering}
+    \subsection{object rendering and object filtering}\label{subsec:object-rendering-and-object-filtering}
+    In this project, we use surface rendering (a.k.a.~ object rendering) to visualize the sphere that the wind passes through.
+    This model is a simple phong-lighting model and ray-casting model but with slightly change in oder to match volume rendering:
+    Beyond the simple phong-lighting model, we check whether the ray touches the volume part first by checking whether the destination opacity is larger than zero.
+
+    We achieve this part by the following procedure: we first perform an object filtering by apply ray-sphere intersection to find the limit of marching depth.
+    In order to achieve a acceptable result, we slightly dilated the radius of the sphere to ensure that all the volumes are covered by the sphere.
+    Then for the rendering part, we applied another ray-sphere intersection but with the correct sphere radius in order to render the real size of the sphere.
+    After that, we perform volume rendering with the marching depth determined during the first ray-sphere intersection.
+    However, even this procedure can vanish most volumes attach to the sphere, there are still tiny pitches that levitate above the sphere.
+    In order to solve those pitches, we adjust the size of bounding box so that those pitches are beyond the bounding box.
+
 
     \subsection{object filter}\label{subsec:object-filter}
 
