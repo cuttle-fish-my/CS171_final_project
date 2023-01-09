@@ -6,12 +6,25 @@
 #include "integrator.h"
 #include "scene.h"
 #include "AABB.h"
-
-#define FOUR_K
+#include "config.h"
 
 int main() {
     setbuf(stdout, nullptr);
+#ifdef MULTI_BIG
     std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/multi-res big.vdb");
+#endif
+
+#ifdef MULTI_SMALL
+    std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/multi-res small.vdb");
+#endif
+
+#ifdef SINGLE_BIG
+    std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/single-res big.vdb");
+#endif
+
+#ifdef SINGLE_SMALL
+    std::vector<Vec3fGrid::Ptr> VectorGrids = Reader::readGrids("dataset/single-res small.vdb");
+#endif
     std::vector<vdbGrid> ScalarGrids = util::convertVectorGridsToScalarGrids(VectorGrids);
 
     auto sphere = Reader::loadObj("dataset/sphere.obj", Vec3f(5, 2, 3), 4.0 / 3.0);

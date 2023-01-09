@@ -5,6 +5,7 @@
 #include "common.h"
 #include "AABB.h"
 #include "geometry.h"
+#include "config.h"
 
 class Scene {
 public:

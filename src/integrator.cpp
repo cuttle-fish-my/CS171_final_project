@@ -3,8 +3,7 @@
 #include <utility>
 #include "interaction.h"
 
-//#define FILTER
-#define SUPER_RES
+
 
 
 Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene) : camera(std::move(cam)),
@@ -12,11 +11,6 @@ Integrator::Integrator(std::shared_ptr<Camera> cam, std::shared_ptr<Scene> scene
 }
 
 void Integrator::render() const {
-#ifdef SUPER_RES
-    const int superSample = 4;
-#else
-    const int superSample = 1;
-#endif
     std::vector<std::pair<float, float>> offsets;
     for (int i = 0; i < superSample; ++i) {
         for (int j = 0; j < superSample; ++j) {
@@ -88,7 +82,7 @@ void Integrator::render() const {
 }
 
 std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const {
-    float step_size = scene->grids[0].dx / 8;
+    float step_size = scene->grids[0].dx / invStepSize;
     Vec3f src_color;
     float src_opacity;
     auto src_t = (float) fmax(t0 - step_size, ray.t0());
@@ -104,7 +98,7 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
         std::tie(src_color, src_opacity, layer) = scene->getEmissionOpacity(src_pos);
 
         if (layer != -1) {
-            step_size = scene->grids[layer].dx / 8;
+            step_size = scene->grids[layer].dx / invStepSize;
 //            accessor = scene->QGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));

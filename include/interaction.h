@@ -2,6 +2,9 @@
 #define CS171_FINAL_PROJECT_INTERACTION_H
 
 #include "common.h"
+#include "config.h"
+
+
 
 struct Interaction {
     Vec3f pos{0,0,0};

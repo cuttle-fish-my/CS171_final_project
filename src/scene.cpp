@@ -1,7 +1,6 @@
 #include "scene.h"
 
-float isoValue = 0.02f;
-float margin = 0.02f;
+
 
 void Scene::setGrids(const std::vector<vdbGrid> &Grids) {
     grids = Grids;
