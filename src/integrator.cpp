@@ -33,7 +33,7 @@ void Integrator::render() const {
     }
     int cnt = 0;
 #ifdef FILTER
-    scene->grids[0].aabb.adjust(Vec3f(5.0, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
+    scene->grids[0].aabb.adjust(Vec3f(5.32, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
 #else
     scene->grids[0].aabb.adjust(Vec3f(4.1, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
 #endif
