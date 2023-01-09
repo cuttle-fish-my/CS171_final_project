@@ -75,6 +75,17 @@
     \end{enumerate}
 
     \subsection{k-d tree}\label{subsec:k-d-tree}
+    k-d tree is implemented to display various layers of resolutions, each layer divides the space into parts (mostly 7 in our case).
+    The tree is utilized to search for the resolution layers supporting a voxel.
+    \begin{enumerate}
+        \item Constructing the tree from scratch is simple: each resolution is read from a separate file, from which a bounding box and their intersection can be calculated. In our case, lower resolution always have a bounding box that contains higher resolution area. Hence, each level of KD-tree includes the next level of KD-tree with its surroundings.
+        \item Traversing the tree to search for dependency from the top:
+        \par If current level is already leaf, return dependency for current level.
+        \par Else we traverse the layer, and search for the voxel according to the bounding boxes.
+        \par Recursively search through every layer, until a leaf node is found or no leaf node is found to be satisfying.
+    \end{enumerate}
+    There are some limitations on our design. Due to the low complexity of the model, we assert layers' have a bounding box that contains each other.
+    In real engineering cases, the distribution can be arbitrary. Hence its not efficiency enough to count the whole bounding box as support region.
 
     \subsection{transfer function}\label{subsec:transfer-function}
     In this project, we use different scalar field to map scalar to color and opacity.
