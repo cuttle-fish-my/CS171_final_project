@@ -43,9 +43,14 @@
     The key contribution of the article is to reorganize multi-level AMR data so that data, especially its boundaries can be accessed efficiently enough.
     They also worked on adaptive sampling on the volume for color and opacity.
     \begin{enumerate}
-        \item In their actual implementation, they use BVH with hardware acceleration for their data structure, named `ExaBricks`.
+        \item ExaBricks
+        \par In their actual implementation, they use BVH with hardware acceleration for their data structure, named `ExaBricks`.
         \par By contrast, we harnessed OpenVDB, a well-design OC-tree for keeping data to visualize, enables fast traversal through a specific layer. To search for the exact layers of voxels, we implemented KD-tree for acceleration.
+        \item Sampling
+        \par Each metadata is leveraged to adapt the sampling rate when traversing for matching the frequency of the data it contains.
         \item Rendering
+        \par First trace each ray against the BVH, then transform it into the volume space, and trace it against the iso-surface BVH to check for a closer surface hit point.
+        Then, the ray is shortened to the nearest interaction point. Ambient occlusion is also supported in addition to local shading.
     \end{enumerate}
 
 
