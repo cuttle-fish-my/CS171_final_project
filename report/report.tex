@@ -19,7 +19,7 @@
     commentstyle=\color{magenta}\ttfamily,
     morecomment=[l][\color{magenta}]{\#},
     classstyle = \bfseries\color{gr33n},
-    tabsize=2,
+    tabsize=1,
     morekeywords={Vec3f, Interaction},
 }
 %\lstset{basicstyle=\ttfamily}
@@ -54,6 +54,7 @@
         \item data preprocessing
         \item k-d tree
         \item transfer function
+        \item Interpolation
         \item volume rendering
         \item object rendering and object filtering
     \end{itemize}
@@ -81,6 +82,36 @@
         with ths approximation, we can efficiently calculate the q-criteria from a discrete velocity field.
         \par Moreover, q-criteria field has a property that the gradient always points to the interior of the flow, which is useful when designing the transfer function.
     \end{enumerate}
+
+    The code of generating q-criteria grids are as follows:
+    \begin{lstlisting}[label={lst:lstlisting7}]
+void Scene::genQGrids() {
+    for (const auto &grid: vectorGrids) {
+        float dx = (float) (grid->transform().voxelSize()[0]);
+        auto qGrid = floatGrid::create();
+        qGrid->setTransform(grid->transform().copy());
+        qGrid->topologyUnion(*grid);
+        auto accessor = qGrid->getAccessor();
+        auto vec_accessor = grid->getAccessor();
+        for (auto iter = grid->cbeginValueOn(); iter; ++iter) {
+            float qValue = 0.0f;
+            openvdb::Coord ijk = iter.getCoord();
+            openvdb::Coord low_x = ijk + openvdb::Coord{-1, 0, 0}, low_y = ijk + openvdb::Coord{0, -1, 0},
+                    low_z = ijk + openvdb::Coord{0, 0, -1};
+            openvdb::Coord high_x = ijk + openvdb::Coord{1, 0, 0}, high_y = ijk + openvdb::Coord{0, 1, 0},
+                    high_z = ijk + openvdb::Coord{0, 0, 1};
+            Vec3f grad_x = (vec_accessor.getValue(high_x) - vec_accessor.getValue(low_x)) / (2 * dx);
+            Vec3f grad_y = (vec_accessor.getValue(high_y) - vec_accessor.getValue(low_y)) / (2 * dx);
+            Vec3f grad_z = (vec_accessor.getValue(high_z) - vec_accessor.getValue(low_z)) / (2 * dx);
+
+            qValue = -0.5f * (grad_x[0] * grad_x[0] + grad_y[1] * grad_y[1] + grad_z[2] * grad_z[2]) -
+                     grad_y[0] * grad_x[1] - grad_z[0] * grad_x[2] - grad_z[1] * grad_y[2];
+            accessor.setValue(iter.getCoord(), qValue);
+        }
+        QGrids.push_back(qGrid);
+    }
+}
+    \end{lstlisting}
 
     \subsection{k-d tree}\label{subsec:k-d-tree}
     k-d tree is implemented to display various layers of resolutions, each layer divides the space into parts (mostly 7 in our case).
@@ -122,6 +153,116 @@
 
     Assume we are in part $[m_0, m_1]$ and get module $m$, and the corresponding color of $m_0,m_1$ are $c_0, c_1$ resp.~ then the the corresponding color of $m$ is
     \[c=\frac{m_1-m}{m_1-m_0}\times c_0 + \frac{m-m_0}{m_1-m_0}\times c_1\]
+    ]
+    The corresponding codes are as follows:
+
+    Opacity:
+    \begin{lstlisting}[label={lst:lstlisting4}]
+float Scene::sampleOpacity(float value) {
+    if (value > isoValue) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+    \end{lstlisting}
+
+    Color:
+
+    \begin{lstlisting}[label={lst:lstlisting5}]
+Vec3f Scene::sampleEmission(float value, float opacity) const {
+    float a_coef = 0, b_coef = 0, c_coef = 0, d_coef = 0;
+    float mid_value_1 = (max_value + min_value) / 3;
+    float mid_value_2 = 2 * mid_value_1;
+    Vec3f A{0, 0.9, 0.2}, B{0.8, 0.8, 0}, C{1, 0, 0}, D{0.4, 0.6, 0};
+    if (value < mid_value_1) {
+        float range = mid_value_1 - min_value;
+        a_coef = 1 - (value - min_value) / range;
+        b_coef = 1 - (mid_value_1 - value) / range;
+    } else if (value >= mid_value_1 && value < mid_value_2){
+        float range = mid_value_2 - mid_value_1;
+        b_coef = 1 - (value - mid_value_1) / range;
+        c_coef = 1 - (mid_value_2 - value) / range;
+    } else {
+        float range = max_value - mid_value_2;
+        c_coef = 1 - (value - mid_value_2) / range;
+        d_coef = 1 - (max_value - value) / range;
+    }
+    auto color = a_coef * A + b_coef * B + c_coef * C + d_coef * D;
+    if (opacity < 1e-3) {
+        return {0, 0, 0};
+    } else {
+        return color ;
+    }
+}
+    \end{lstlisting}
+
+    \subsection{Interpolation}\label{subsec:interpolation}
+    Given that vdb files are all discrete voxels and ray marching algorithm ask as to access data in any world coordinate.
+    In order to solve this problem, we need to perform interpolation within multi-resolution grids.
+
+    For simply case, when we only have single resolution, we need to calculate a hat-shaped basis function:
+    \begin{equation}
+        \hat{H}_C(p) = \hat{h}\left( \frac{|C_{px}-p_x|}{C_w} \right)\hat{h}\left( \frac{|C_{py}-p_y|}{C_w} \right)\hat{h}\left( \frac{|C_{pz}-p_z|}{C_w} \right)\label{eq:equation2}
+    \end{equation}
+    where $\hat{h}(x) = \max(1-x,0) $, $C_w$ is the width of cell $C$ and $C_{px}, C_{py}, C_{pz}$ are the coordinate along three axis.
+    Then, for reconstructing a sample at position $p$, we need to involve all cell $C_i$ with value $C_{v_i}$ such that $\hat{H}_{C_i}(p) \neq 0$ and compute the weighted sum:
+    \begin{equation}
+        B(p)=\frac{\sum_{C_i} \hat{H}_{C_i}(p)C_{v_i}}{\sum_{C_i}\hat{H}_{C_i}(p)}\label{eq:equation3}
+    \end{equation}
+
+    However, for a more complicated case, if we have multi-resolution grids, we need to use k-d tree to first determine which resolutions do we need to preform interpolation.
+    Then we calculate the multi-interpolation with the procedure shown above.
+
+    Then corresponding codes are as follows:
+    \begin{lstlisting}[label={lst:lstlisting6}]
+template<typename T, typename GridType>
+int Scene::interpolation(const Vec3f &pos, T &res, const std::vector<GridType> &Grids) const {
+    std::vector<std::vector<Vec3i>> Corners;
+    for (const auto &grid: Grids) {
+        Vec3d local_pos = (grid->transform().worldToIndex(pos));
+        Vec3i lower = {Vec3i(floor(local_pos.x()), floor(local_pos.y()), floor(local_pos.z()))};
+        Vec3i upper = {Vec3i(ceil(local_pos.x()), ceil(local_pos.y()), ceil(local_pos.z()))};
+        Corners.push_back(
+        {{lower.x(), lower.y(), lower.z()},
+        {lower.x(), lower.y(), upper.z()},
+        {lower.x(), upper.y(), lower.z()},
+        {lower.x(), upper.y(), upper.z()},
+        {upper.x(), lower.y(), lower.z()},
+        {upper.x(), lower.y(), upper.z()},
+        {upper.x(), upper.y(), lower.z()},
+        {upper.x(), upper.y(), upper.z()}});
+    }
+
+    res = T(0);
+
+    // Traverse KD-tree
+    int layers = searchTree(pos);
+    if (layers == -1) return -1;
+
+    T numerator(0);
+
+    float denominator = 0;
+    for (int r = 0; r < 8; ++r) {
+        for (int i = layers; i >= 0; --i) {
+            openvdb::Coord coord{Corners[i][r]};
+            float dx = float(Grids[i]->transform().voxelSize()[0]);
+            if (Grids[i]->tree().isValueOn(coord)) {
+                Vec3f corner = Grids[i]->transform().indexToWorld(Corners[i][r]);
+                float weight = 1;
+                for (int j = 0; j < 3; j++) {
+                    weight *= float(fmax((1 - fabs(corner[j] - pos[j]) / dx), 0.0));
+                }
+                numerator += weight * Grids[i]->tree().getValue(coord);
+                denominator += weight;
+                break;
+            }
+        }
+    }
+    if (denominator != 0) res = numerator / denominator;
+    return layers;
+}
+    \end{lstlisting}
 
     \subsection{volume rendering}\label{subsec:volume-rendering}
     For the volume rendering part, we use \emph{front-to-back} algorithm to rendering the turbulence.
@@ -300,6 +441,7 @@ camera->getImage()->setPixel(dx, dy, L);
         \includegraphics[width=0.45\textwidth]{./image/single_small_1080p_8_no_filter_0.002_4XRES}
         \caption{Single-resolution small field, 1080p resolution, $ \frac{dx}{8} $ step size without object filtering and 4X super resolution anti-aliasing (iso-value = 0.002)}\label{fig:figure16}
     \end{figure}
+
 
     \section{Division of work}\label{sec:division-of-work}
 
