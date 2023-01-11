@@ -33,7 +33,7 @@ void Integrator::render() const {
     }
     int cnt = 0;
 #ifdef FILTER
-    scene->grids[0].aabb.adjust(Vec3f(5.32, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
+    scene->grids[0].aabb.adjust(Vec3f(5.1, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
 #else
     scene->grids[0].aabb.adjust(Vec3f(4.1, 0.8, 2.0), Vec3f(-0.5, -0.5, -2.0));
 #endif
@@ -99,31 +99,31 @@ std::pair<Vec3f, float> Integrator::radiance(Ray &ray, float t0, float t1) const
 
         if (layer != -1) {
             step_size = scene->grids[layer].dx / invStepSize;
-//            accessor = scene->QGrids[layer]->getAccessor();
+            accessor = scene->QGrids[layer]->getAccessor();
         }
         src_opacity = (float) (1.0 - std::pow(1 - src_opacity, step_size));
         dst_color += (1 - dst_opacity) * src_color;
         dst_opacity += (1 - dst_opacity) * src_opacity;
+        if (src_opacity != 0 && !flag) {
+            if (layer == -1) {
+                std::cerr << "Error: src_opacity != 0 but layer == -1" << std::endl;
+            }
+            openvdb::Coord ijk(Vec3i(scene->moduleGrids[layer]->transform().worldToIndex(src_pos)));
+            openvdb::Coord low_x = ijk + openvdb::Coord{-1, 0, 0}, low_y = ijk + openvdb::Coord{0, -1, 0},
+                    low_z = ijk + openvdb::Coord{0, 0, -1};
+            openvdb::Coord high_x = ijk + openvdb::Coord{1, 0, 0}, high_y = ijk + openvdb::Coord{0, 1, 0},
+                    high_z = ijk + openvdb::Coord{0, 0, 1};
+            dx = scene->grids[layer].dx;
+            float grad_x = (accessor.getValue(high_x) - accessor.getValue(low_x)) / (2 * dx);
+            float grad_y = (accessor.getValue(high_y) - accessor.getValue(low_y)) / (2 * dx);
+            float grad_z = (accessor.getValue(high_z) - accessor.getValue(low_z)) / (2 * dx);
+            Vec3f normal = -Vec3f{grad_x, grad_y, grad_z};
+            normal.normalize();
+            Interaction interaction{src_pos, -1, normal};
+            dst_color += radiance(ray, interaction, src_color);
+            flag = true;
+        }
         if (src_opacity > 1 - 1e-2) break;
-//        if (src_opacity != 0 && !flag) {
-//            if (layer == -1) {
-//                std::cerr << "Error: src_opacity != 0 but layer == -1" << std::endl;
-//            }
-//            openvdb::Coord ijk(Vec3i(scene->moduleGrids[layer]->transform().worldToIndex(src_pos)));
-//            openvdb::Coord low_x = ijk + openvdb::Coord{-1, 0, 0}, low_y = ijk + openvdb::Coord{0, -1, 0},
-//                    low_z = ijk + openvdb::Coord{0, 0, -1};
-//            openvdb::Coord high_x = ijk + openvdb::Coord{1, 0, 0}, high_y = ijk + openvdb::Coord{0, 1, 0},
-//                    high_z = ijk + openvdb::Coord{0, 0, 1};
-//            dx = scene->grids[layer].dx;
-//            float grad_x = (accessor.getValue(high_x) - accessor.getValue(low_x)) / (2 * dx);
-//            float grad_y = (accessor.getValue(high_y) - accessor.getValue(low_y)) / (2 * dx);
-//            float grad_z = (accessor.getValue(high_z) - accessor.getValue(low_z)) / (2 * dx);
-//            Vec3f normal = Vec3f{grad_x, grad_y, grad_z};
-//            normal.normalize();
-//            Interaction interaction{src_pos, -1, normal};
-//            dst_color += radiance(ray, interaction, src_color);
-//            flag = true;
-//        }
     }
     return {dst_color, dst_opacity};
 }

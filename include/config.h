@@ -10,9 +10,9 @@
 //#define SINGLE_BIG
 //#define SINGLE_SMALL
 
-//#define FOUR_K
-#define invStepSize 2
-//#define FILTER
+#define FOUR_K
+#define invStepSize 8
+#define FILTER
 #define isoValue 0.02f
 #define superSample 1
 
